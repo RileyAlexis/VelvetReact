@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import meyda from 'meyda';
 
 import { Button } from '@mui/material';
@@ -8,65 +8,62 @@ import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 
 export const App: React.FC = () => {
 
-  const [isMicOpen, setIsMicOpen] = useState<boolean>(false);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const audioContext = useRef<AudioContext | null>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | null>(null);
+  const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
   const [rms, setRms] = useState<number | null>(null);
   const [spectral, setSpectral] = useState<number | null>(null);
-  const audioContext: AudioContext = new AudioContext();
 
-  const openAudioContext = (): void => {
-
-    if (audioContext.state === 'suspended') {
-
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then((stream: MediaStream) => {
-          //Use the stream here
-          const micStream = audioContext.createMediaStreamSource(stream);
-
-          meydaAnalyzers(micStream, 'start');
-          console.log('Microphone activated');
-        }).catch((error) => {
-          console.error(error);
-        })
-    } else if (audioContext.state !== 'suspended') {
-      audioContext.suspend();
-      console.log('Microphone suspended');
-      meydaAnalyzers('', 'stop');
+  const startRecording = () => {
+    if (!audioContext.current) {
+      audioContext.current = new AudioContext();
+      startAnalyzer();
     }
+    if (audioContext) {
+      startAnalyzer();
+    }
+
   }
 
-  function meydaAnalyzers(sourceStream: MediaStream) {
+  const startAnalyzer = async () => {
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const source = audioContext.current.createMediaStreamSource(stream);
+        setMediaStream(source);
 
-    if (typeof meyda === "undefined") {
-      console.log("Meyda could not be found! Have you included it?");
+        const analyzer = meyda.createMeydaAnalyzer({
+          audioContext: audioContext.current,
+          source: source,
+          bufferSize: 512,
+          featureExtractors: ['rms', 'spectralCentroid'],
+          callback: (features: Meyda.MeydaFeaturesObject) => {
+            setRms(features.rms);
+            setSpectral(features.spectralCentroid);
+          },
+        });
+        analyzer.start();
+        setMeydaAnalyzer(analyzer);
+
+        setIsRecording(true);
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+      }
     } else {
-      const analyzer: MeydaAnalyzer = meyda.createMeydaAnalyzer({
-        audioContext: audioContext,
-        source: sourceStream,
-        bufferSize: 512,
-        featureExtractors: ["rms", "amplitudeSpectrum", "spectralCentroid"],
-        callback: (features) => {
-
-          setRms(features.rms);
-          setSpectral(features.spectralCentroid);
-          //console.log(features.amplitudeSpectrum); //float32 array
-          // audioLevels.innerHTML = features.rms * 1000;
-          // spectralCentroid.textContent = features.spectralCentroid;
-        },
-      });
-      analyzer.start();
-
-      console.log('Starting Analyzer');
+      if (mediaStream) {
+        mediaStream.disconnect();
+      }
+      if (meydaAnalyzer) {
+        meydaAnalyzer.stop();
+      }
+      setIsRecording(false);
     }
-  }
-
-  const handleMicOpen = () => {
-    setIsMicOpen(prev => !prev);
-    openAudioContext();
-  }
+  };
 
   return (
     <div>
-      <Button onMouseDown={handleMicOpen}>Mic {JSON.stringify(isMicOpen)}</Button>
+      <Button onMouseDown={startRecording}>Mic {JSON.stringify(isRecording)}</Button>
       <br />
       <span>RMS: {rms}</span>
       <br />
