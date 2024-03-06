@@ -15,18 +15,19 @@ export const App: React.FC = () => {
   const [rms, setRms] = useState<number | null>(null);
   const [spectral, setSpectral] = useState<number | null>(null);
 
-  const startRecording = () => {
+  const startRecording = (audioFile?: File) => {
     if (!audioContext.current) {
       audioContext.current = new AudioContext();
-      startAnalyzer();
+      startAnalyzer(audioFile);
     }
     if (audioContext) {
-      startAnalyzer();
+      startAnalyzer(audioFile);
     }
 
   }
 
   const startAnalyzer = async () => {
+    audioContext.current?.resume();
     if (!isRecording) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -51,11 +52,15 @@ export const App: React.FC = () => {
         console.error('Error accessing microphone:', error);
       }
     } else {
+      console.log('Stop recording called');
       if (mediaStream) {
         mediaStream.disconnect();
+        audioContext.current?.suspend();
+        console.log('Media Stream Disconnect called');
       }
       if (meydaAnalyzer) {
         meydaAnalyzer.stop();
+        console.log('Meyda stop called');
       }
       setIsRecording(false);
     }
