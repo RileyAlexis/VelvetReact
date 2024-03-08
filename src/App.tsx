@@ -15,23 +15,29 @@ export const App: React.FC = () => {
   const [rms, setRms] = useState<number | null>(null);
   const [spectral, setSpectral] = useState<number | null>(null);
 
-  const startRecording = (audioFile?: File) => {
+  const startRecording = () => {
     if (!audioContext.current) {
       audioContext.current = new AudioContext();
-      startAnalyzer(audioFile);
+      startAnalyzer();
     }
     if (audioContext) {
-      startAnalyzer(audioFile);
+      startAnalyzer();
     }
 
   }
 
   const startAnalyzer = async () => {
+
     audioContext.current?.resume();
+
     if (!isRecording) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const source = audioContext.current.createMediaStreamSource(stream);
+        let stream: MediaStream | null = null;
+        let source: MediaStreamAudioSourceNode | null = null;
+
+
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        source = audioContext.current.createMediaStreamSource(stream);
         setMediaStream(source);
 
         const analyzer = meyda.createMeydaAnalyzer({
@@ -44,6 +50,7 @@ export const App: React.FC = () => {
             setSpectral(features.spectralCentroid);
           },
         });
+
         analyzer.start();
         setMeydaAnalyzer(analyzer);
 
