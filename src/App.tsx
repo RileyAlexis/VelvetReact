@@ -6,12 +6,15 @@ import { Button } from '@mui/material';
 import './App.css'
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 
+import { AnalyzeFile } from './components/AnalyzeFile';
+
 export const App: React.FC = () => {
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const audioContext = useRef<AudioContext | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | null>(null);
   const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
+
   const [rms, setRms] = useState<number | null>(null);
   const [spectral, setSpectral] = useState<number | null>(null);
 
@@ -80,6 +83,7 @@ export const App: React.FC = () => {
       <span>RMS: {rms}</span>
       <br />
       <span>Spectral Centroid: {spectral}</span>
+      <AnalyzeFile setRms={setRms} setSpectral={setSpectral} />
     </div>
   )
 }

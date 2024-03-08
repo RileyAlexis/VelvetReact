@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import meyda from "meyda";
 import { MeydaAnalyzer } from "meyda/dist/esm/meyda-wa";
 
-export const AnalyzeFile: React.FC = ({ setRMS, setSpectral }) => {
+export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
 
     const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
     const [mediaStreamSource, setMediaStreamSource] = useState<MediaStreamSourceNode | null>(null);
@@ -20,14 +20,16 @@ export const AnalyzeFile: React.FC = ({ setRMS, setSpectral }) => {
         }
 
         try {
-            const arrayBuffer = await file.arrayBuffer();
-            const audioBuffer = await AudioContextRef.current.destination;
+            let source: AudioBufferSourceNode | null = null;
 
-            const source = audioContextRef.current.createBufferSource();
+
+            const arrayBuffer = await file.arrayBuffer();
+            const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+
+            source = audioContextRef.current.createBufferSource();
             source.buffer = audioBuffer;
             source.connect(audioContextRef.current.destination);
             source.start();
-
             setMediaStreamSource(source);
 
             const analyzer = meyda.createMeydaAnalyzer({
