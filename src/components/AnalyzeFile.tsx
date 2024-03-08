@@ -4,55 +4,79 @@ import { MeydaAnalyzer } from "meyda/dist/esm/meyda-wa";
 
 export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
 
-    const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-    const [mediaStreamSource, setMediaStreamSource] = useState<MediaStreamSourceNode | null>(null);
+    const [mediaStreamSource, setMediaStreamSource] = useState<MediaStreamAudioSourceNode | null>(null);
+    const [isRecording, setIsRecording] = useState(false);
     const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
     const audioContextRef = useRef<AudioContext | null>(null);
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (file) {
+            startRecording(file);
+        }
+    }
+
+    const startRecording = async (audioFile?: File) => {
 
         if (!audioContextRef.current) {
             audioContextRef.current = new AudioContext();
-            setAudioContext(audioContextRef.current);
         }
 
-        try {
-            let source: AudioBufferSourceNode | null = null;
+        if (!isRecording) {
+            try {
+                let source: AudioBufferSourceNode | null = null;
 
+                const arrayBuffer = await audioFile.arrayBuffer();
+                const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
 
-            const arrayBuffer = await file.arrayBuffer();
-            const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+                source = audioContextRef.current.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContextRef.current.destination);
+                source.addEventListener('ended', () => {
+                    audioContextRef.current!.close();
+                    setMediaStreamSource(null);
+                    setMeydaAnalyzer(null)
+                    setIsRecording(false);
+                })
+                source.start();
+                setMediaStreamSource(source);
 
-            source = audioContextRef.current.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioContextRef.current.destination);
-            source.start();
-            setMediaStreamSource(source);
-
-            const analyzer = meyda.createMeydaAnalyzer({
-                audioContext: audioContextRef.current,
-                source: source,
-                bufferSize: 512,
-                featureExtractors: ['rms', 'spectralCentroid'],
-                callback: (features: Meyda.MeydaFeaturesObject) => {
-                    setRms(features.rms);
-                    setSpectral(features.spectralCentroid);
-                }
-            });
-            analyzer.start();
-            setMeydaAnalyzer(analyzer);
-            // onAnalysisStart();
-        } catch (error) {
-            console.error('Error decoding audio file', error);
+                const analyzer = meyda.createMeydaAnalyzer({
+                    audioContext: audioContextRef.current,
+                    source: source,
+                    bufferSize: 512,
+                    featureExtractors: ['rms', 'spectralCentroid'],
+                    callback: (features: Meyda.MeydaFeaturesObject) => {
+                        setRms(features.rms);
+                        setSpectral(features.spectralCentroid);
+                    }
+                });
+                analyzer.start();
+                setMeydaAnalyzer(analyzer);
+                setIsRecording(true);
+            } catch (error) {
+                console.error('Error decoding audio file', error);
+            }
         }
     };
 
+    const handleStopRecording = () => {
+        if (mediaStreamSource) {
+            mediaStreamSource.disconnect();
+        }
+        if (meydaAnalyzer) {
+            meydaAnalyzer.stop();
+        }
+        setIsRecording(false);
+    }
+
     return (
         <div>
-            <input type='file' accept="audio/*" onChange={handleFileChange} />
+            <input type='file' accept="audio/*" onChange={handleFileUpload} />
+            <button onMouseDown={() => startRecording()} disabled={isRecording}>Start Playing</button>
+            <button onMouseDown={handleStopRecording} disabled={!isRecording}>Stop Playing</button>
+            <span>{JSON.stringify(isRecording)}</span>
         </div>
     )
 }
