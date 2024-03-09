@@ -56,6 +56,8 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
                     setIsRecording(false);
                     setIsPaused(true);
                     setIsEnded(true);
+                    analyzer?.stop();
+                    // setMeydaAnalyzer(null);
                 });
 
                 source.start();
@@ -82,19 +84,19 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
     };
 
     const handlePause = () => {
-        if (meydaAnalyzer) {
-            meydaAnalyzer.stop();
-            audioContextRef.current?.suspend();
-            setIsRecording(false);
-            setIsPaused(true);
-        }
+
+        audioContextRef.current?.suspend();
+        // meydaAnalyzer?.stop(); //Stopping analyzer on suspend results in multiple analyzers running
+        setIsRecording(false);
+        setIsPaused(true);
+
         setIsRecording(false);
     }
 
     const handleResume = () => {
         if (audioFile.current) {
             audioContextRef.current?.resume();
-            meydaAnalyzer?.start();
+            // meydaAnalyzer?.start(); //Stopping analyzer on suspend results in multiple analyzers running
             setIsRecording(true);
             setIsPaused(false);
         } else {
@@ -104,8 +106,8 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
     }
 
     useEffect(() => {
-        console.log('Current Audio Context State', audioContextRef.current?.state);
-    }, [audioContextRef.current?.state]);
+        console.log('Meyda Analyzer', meydaAnalyzer);
+    }, [meydaAnalyzer]);
 
     return (
         <div>

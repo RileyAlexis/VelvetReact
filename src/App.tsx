@@ -26,7 +26,9 @@ export const App: React.FC = () => {
     if (audioContext) {
       startAnalyzer();
     }
+    if (isRecording) {
 
+    }
   }
 
   const startAnalyzer = async () => {
@@ -40,7 +42,7 @@ export const App: React.FC = () => {
 
 
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        source = audioContext.current.createMediaStreamSource(stream);
+        source = audioContext.current?.createMediaStreamSource(stream);
         setMediaStream(source);
 
         const analyzer = meyda.createMeydaAnalyzer({
@@ -64,9 +66,9 @@ export const App: React.FC = () => {
     } else {
       console.log('Stop recording called');
       if (mediaStream) {
-        mediaStream.disconnect();
+        // mediaStream.disconnect();
         audioContext.current?.suspend();
-        console.log('Media Stream Disconnect called');
+        // console.log('Media Stream Disconnect called');
       }
       if (meydaAnalyzer) {
         meydaAnalyzer.stop();
