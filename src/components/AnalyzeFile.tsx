@@ -6,7 +6,10 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
 
     const [mediaStreamSource, setMediaStreamSource] = useState<MediaStreamAudioSourceNode | null>(null);
     const [isRecording, setIsRecording] = useState<boolean>(false);
+    const [isPaused, setIsPaused] = useState<boolean>(true);
+    const [isEnded, setIsEnded] = useState<boolean>(false);
     const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
+    const [error, setError] = useState<String>('');
 
     const audioFile = useRef<File>(null);
 
@@ -24,6 +27,10 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
     }
 
     const startRecording = async () => {
+        if (!audioFile.current) {
+            setError('Please select a file to analyze');
+            return;
+        }
 
         if (!audioContextRef.current) {
             audioContextRef.current = new AudioContext();
@@ -31,6 +38,8 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
 
         if (!isRecording) {
             try {
+                setError('');
+                setIsEnded(false);
                 audioContextRef.current?.resume();
                 let source: AudioBufferSourceNode | null = null;
 
@@ -45,6 +54,8 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
                     audioContextRef.current!.suspend();
                     console.log('Ended event triggered');
                     setIsRecording(false);
+                    setIsPaused(true);
+                    setIsEnded(true);
                 });
 
                 source.start();
@@ -63,26 +74,32 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
                 analyzer.start();
                 setMeydaAnalyzer(analyzer);
                 setIsRecording(true);
+                setIsPaused(false);
             } catch (error) {
                 console.error('Error decoding audio file', error);
             }
         }
     };
 
-    const handleStopRecording = () => {
+    const handlePause = () => {
         if (meydaAnalyzer) {
             meydaAnalyzer.stop();
             audioContextRef.current?.suspend();
             setIsRecording(false);
+            setIsPaused(true);
         }
         setIsRecording(false);
     }
 
-    const handleStartRecording = () => {
+    const handleResume = () => {
         if (audioFile.current) {
             audioContextRef.current?.resume();
             meydaAnalyzer?.start();
             setIsRecording(true);
+            setIsPaused(false);
+        } else {
+            setError('Please select a file to analyze');
+
         }
     }
 
@@ -93,10 +110,10 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
     return (
         <div>
             <input type='file' accept="audio/*" onChange={handleFileUpload} />
-            <button onMouseDown={startRecording} disabled={isRecording}>Replay</button>
-            <button onMouseDown={handleStartRecording} disabled={isRecording}>Start Playing</button>
-            <button onMouseDown={handleStopRecording} disabled={!isRecording}>Stop Playing</button>
-            <span>{JSON.stringify(isRecording)}</span>
+            <button onMouseDown={startRecording} disabled={!isEnded}>Replay</button>
+            <button onMouseDown={handleResume} disabled={!isPaused}>Resume</button>
+            <button onMouseDown={handlePause} disabled={isPaused}>Pause</button>
+            <span style={{ color: 'red' }}>{error}</span>
         </div>
     )
 }
