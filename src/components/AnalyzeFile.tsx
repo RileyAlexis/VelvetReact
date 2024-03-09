@@ -70,13 +70,20 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
     };
 
     const handleStopRecording = () => {
-        if (mediaStreamSource) {
-            mediaStreamSource.disconnect();
-        }
         if (meydaAnalyzer) {
             meydaAnalyzer.stop();
+            audioContextRef.current?.suspend();
+            setIsRecording(false);
         }
         setIsRecording(false);
+    }
+
+    const handleStartRecording = () => {
+        if (audioFile.current) {
+            audioContextRef.current?.resume();
+            meydaAnalyzer?.start();
+            setIsRecording(true);
+        }
     }
 
     useEffect(() => {
@@ -86,7 +93,8 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
     return (
         <div>
             <input type='file' accept="audio/*" onChange={handleFileUpload} />
-            <button onMouseDown={() => startRecording()} disabled={isRecording}>Start Playing</button>
+            <button onMouseDown={startRecording} disabled={isRecording}>Replay</button>
+            <button onMouseDown={handleStartRecording} disabled={isRecording}>Start Playing</button>
             <button onMouseDown={handleStopRecording} disabled={!isRecording}>Stop Playing</button>
             <span>{JSON.stringify(isRecording)}</span>
         </div>
