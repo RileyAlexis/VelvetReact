@@ -1,11 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import meyda from "meyda";
 import { MeydaAnalyzer } from "meyda/dist/esm/meyda-wa";
 
 export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
 
     const [mediaStreamSource, setMediaStreamSource] = useState<MediaStreamAudioSourceNode | null>(null);
-    const [isRecording, setIsRecording] = useState(false);
+    const [isRecording, setIsRecording] = useState<boolean>(false);
     const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -13,6 +13,7 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            console.log('File Uploaded');
             startRecording(file);
         }
     }
@@ -25,6 +26,7 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
 
         if (!isRecording) {
             try {
+                audioContextRef.current?.resume();
                 let source: AudioBufferSourceNode | null = null;
 
                 const arrayBuffer = await audioFile.arrayBuffer();
@@ -33,12 +35,15 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
                 source = audioContextRef.current.createBufferSource();
                 source.buffer = audioBuffer;
                 source.connect(audioContextRef.current.destination);
+
                 source.addEventListener('ended', () => {
-                    audioContextRef.current!.close();
+                    audioContextRef.current!.suspend();
+                    console.log('Ended event triggered');
                     setMediaStreamSource(null);
                     setMeydaAnalyzer(null)
                     setIsRecording(false);
-                })
+                });
+
                 source.start();
                 setMediaStreamSource(source);
 
@@ -70,6 +75,10 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
         }
         setIsRecording(false);
     }
+
+    useEffect(() => {
+        console.log('Current Audio Context State', audioContextRef.current?.state);
+    }, [audioContextRef.current?.state]);
 
     return (
         <div>
