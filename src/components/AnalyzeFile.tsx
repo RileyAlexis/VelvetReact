@@ -8,17 +8,22 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
+    const audioFile = useRef<File>(null);
+
+    // let audioFile: File;
+
     const audioContextRef = useRef<AudioContext | null>(null);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             console.log('File Uploaded');
-            startRecording(file);
+            audioFile.current = file;
+            startRecording();
         }
     }
 
-    const startRecording = async (audioFile?: File) => {
+    const startRecording = async () => {
 
         if (!audioContextRef.current) {
             audioContextRef.current = new AudioContext();
@@ -29,7 +34,7 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
                 audioContextRef.current?.resume();
                 let source: AudioBufferSourceNode | null = null;
 
-                const arrayBuffer = await audioFile.arrayBuffer();
+                const arrayBuffer = await audioFile.current?.arrayBuffer();
                 const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
 
                 source = audioContextRef.current.createBufferSource();
@@ -39,8 +44,6 @@ export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
                 source.addEventListener('ended', () => {
                     audioContextRef.current!.suspend();
                     console.log('Ended event triggered');
-                    setMediaStreamSource(null);
-                    setMeydaAnalyzer(null)
                     setIsRecording(false);
                 });
 
