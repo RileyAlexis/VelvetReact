@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import meyda from 'meyda';
 
 import { Button } from '@mui/material';
@@ -6,7 +6,9 @@ import { Button } from '@mui/material';
 import './App.css'
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 
+//Components
 import { AnalyzeFile } from './components/AnalyzeFile';
+import { SpectralChart } from './components/SpectralChart';
 
 export const App: React.FC = () => {
 
@@ -16,7 +18,8 @@ export const App: React.FC = () => {
   const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
   const [rms, setRms] = useState<number | null>(null);
-  const [spectral, setSpectral] = useState<number | null>(null);
+  const [spectral, setSpectral] = useState<number>(0);
+  const [spectralArray, setSpectralArray] = useState<number[]>([0]);
 
   const startRecording = () => {
     if (!audioContext.current) {
@@ -78,6 +81,14 @@ export const App: React.FC = () => {
     }
   };
 
+  // useEffect(() => {
+  //   setSpectralArray([...spectralArray, spectral]);
+  // })
+
+  useEffect(() => {
+    console.log('Spectral Array length', spectralArray.length);
+  }, [spectralArray])
+
   return (
     <div>
       <Button onMouseDown={startRecording}>Mic {JSON.stringify(isRecording)}</Button>
@@ -86,6 +97,9 @@ export const App: React.FC = () => {
       <br />
       <span>Spectral Centroid: {spectral}</span>
       <AnalyzeFile setRms={setRms} setSpectral={setSpectral} />
+      <div className='chart'>
+        <SpectralChart data={spectralArray} />
+      </div>
     </div>
   )
 }
