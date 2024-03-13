@@ -4,10 +4,11 @@ import { MeydaAnalyzer } from "meyda/dist/esm/meyda-wa";
 
 interface AnalyzeFileProps {
     setRms: Function,
-    setSpectral: Function
+    setSpectral: Function,
+    calculateAnalyzer: Function
 }
 
-export const AnalyzeFile: React.FC<AnalyzeFileProps> = ({ setRms, setSpectral }) => {
+export const AnalyzeFile: React.FC<AnalyzeFileProps> = ({ setRms, setSpectral, calculateAnalyzer }) => {
 
     const [mediaStreamSource, setMediaStreamSource] = useState<MediaStreamAudioSourceNode | null>(null);
     const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -62,7 +63,6 @@ export const AnalyzeFile: React.FC<AnalyzeFileProps> = ({ setRms, setSpectral })
                     setIsPaused(true);
                     setIsEnded(true);
                     analyzer?.stop();
-                    // setMeydaAnalyzer(null);
                 });
 
                 source.start();
@@ -76,6 +76,7 @@ export const AnalyzeFile: React.FC<AnalyzeFileProps> = ({ setRms, setSpectral })
                     callback: (features: Meyda.MeydaFeaturesObject) => {
                         setRms(features.rms);
                         setSpectral(features.spectralCentroid);
+                        calculateAnalyzer(features);
                     }
                 });
                 analyzer.start();

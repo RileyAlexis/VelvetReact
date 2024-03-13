@@ -37,7 +37,7 @@ export const App: React.FC = () => {
     }
   }
 
-  const calculateAnalyser = (features) => {
+  const calculateAnalyser = (features: Meyda.MeydaFeaturesObject) => {
     //Averages spectral centroid over 30 ticks then limits display to previous 100
     spectralSmall.push(features.spectralCentroid);
     if (spectralSmall.length > 30) {
@@ -120,10 +120,15 @@ export const App: React.FC = () => {
       <span>RMS: {rms}</span>
       <br />
       <span>Spectral Centroid: {spectral}</span>
-      <AnalyzeFile setRms={setRms} setSpectral={setSpectral} />
+      <AnalyzeFile
+        setRms={setRms}
+        setSpectral={setSpectral}
+        calculateAnalyzer={calculateAnalyser} />
+
       {/* ∫<div className='chart'>
         <SpectralChart spectral={spectral} />
       </div> */}
+
       <div>
         <SpectralPlot spectralArray={spectralArray} rms={rms} />
       </div>
