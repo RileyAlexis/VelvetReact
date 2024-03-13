@@ -37,6 +37,22 @@ export const App: React.FC = () => {
     }
   }
 
+  const calculateAnalyser = (features) => {
+    //Averages spectral centroid over 30 ticks then limits display to previous 100
+    spectralSmall.push(features.spectralCentroid);
+    if (spectralSmall.length > 30) {
+      let arrayAverage: number = 0;
+      for (let i = 0; i < spectralSmall.length; i++) {
+        arrayAverage += spectralSmall[i];
+      }
+      spectralSmall = [];
+      setSpectralArray((prevValues) => {
+        const newValues = [...prevValues, (arrayAverage / 30)];
+        return newValues.slice(Math.max(newValues.length - 100, 0));
+      })
+    }
+  }
+
   const startAnalyzer = async () => {
 
     audioContext.current?.resume();
@@ -59,19 +75,7 @@ export const App: React.FC = () => {
           callback: (features: Meyda.MeydaFeaturesObject) => {
             setRms(features.rms);
             setSpectral(features.spectralCentroid);
-            //Limits spectral array to previous 1000 values
-            spectralSmall.push(features.spectralCentroid);
-            if (spectralSmall.length > 30) {
-              let arrayAverage: number = 0;
-              for (let i = 0; i < spectralSmall.length; i++) {
-                arrayAverage += spectralSmall[i];
-              }
-              spectralSmall = [];
-              setSpectralArray((prevValues) => {
-                const newValues = [...prevValues, (arrayAverage / 30)];
-                return newValues.slice(Math.max(newValues.length - 100, 0));
-              })
-            }
+            calculateAnalyser(features);
           }
 
         });
