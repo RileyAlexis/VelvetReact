@@ -2,7 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import meyda from "meyda";
 import { MeydaAnalyzer } from "meyda/dist/esm/meyda-wa";
 
-export const AnalyzeFile: React.FC = ({ setRms, setSpectral }) => {
+interface AnalyzeFileProps {
+    setRms: Function,
+    setSpectral: Function
+}
+
+export const AnalyzeFile: React.FC<AnalyzeFileProps> = ({ setRms, setSpectral }) => {
 
     const [mediaStreamSource, setMediaStreamSource] = useState<MediaStreamAudioSourceNode | null>(null);
     const [isRecording, setIsRecording] = useState<boolean>(false);

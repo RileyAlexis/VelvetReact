@@ -9,6 +9,7 @@ import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 //Components
 import { AnalyzeFile } from './components/AnalyzeFile';
 import { SpectralChart } from './components/SpectralChart';
+import { SpectralPlot } from './components/SpectralPlot';
 
 export const App: React.FC = () => {
 
@@ -19,7 +20,9 @@ export const App: React.FC = () => {
 
   const [rms, setRms] = useState<number | null>(null);
   const [spectral, setSpectral] = useState<number>(0);
-  const [spectralArray, setSpectralArray] = useState<number[]>([0]);
+  const [spectralArray, setSpectralArray] = useState<number[]>([]);
+
+  let spectralSmall: number[] = [];
 
   const startRecording = () => {
     if (!audioContext.current) {
@@ -56,7 +59,21 @@ export const App: React.FC = () => {
           callback: (features: Meyda.MeydaFeaturesObject) => {
             setRms(features.rms);
             setSpectral(features.spectralCentroid);
-          },
+            //Limits spectral array to previous 1000 values
+            spectralSmall.push(features.spectralCentroid);
+            if (spectralSmall.length > 30) {
+              let arrayAverage: number = 0;
+              for (let i = 0; i < spectralSmall.length; i++) {
+                arrayAverage += spectralSmall[i];
+              }
+              spectralSmall = [];
+              setSpectralArray((prevValues) => {
+                const newValues = [...prevValues, (arrayAverage / 30)];
+                return newValues.slice(Math.max(newValues.length - 100, 0));
+              })
+            }
+          }
+
         });
 
         analyzer.start();
@@ -82,11 +99,14 @@ export const App: React.FC = () => {
   };
 
   // useEffect(() => {
-  //   setSpectralArray([...spectralArray, spectral]);
-  // })
+  //   if (isRecording) {
+
+  //     }
+  //   }
+  // }, [spectralSmall])
 
   useEffect(() => {
-    console.log('Spectral Array length', spectralArray.length);
+    // console.log('Spectral Array length', spectralArray[spectralArray.length - 1]);
   }, [spectralArray])
 
   return (
@@ -97,8 +117,11 @@ export const App: React.FC = () => {
       <br />
       <span>Spectral Centroid: {spectral}</span>
       <AnalyzeFile setRms={setRms} setSpectral={setSpectral} />
-      <div className='chart'>
-        <SpectralChart data={spectralArray} />
+      {/* ∫<div className='chart'>
+        <SpectralChart spectral={spectral} />
+      </div> */}
+      <div>
+        <SpectralPlot spectralArray={spectralArray} rms={rms} />
       </div>
     </div>
   )
