@@ -19,9 +19,11 @@ export const App: React.FC = () => {
   const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
   const [rms, setRms] = useState<number | null>(null);
+  const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectral, setSpectral] = useState<number>(0);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
 
+  let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
 
   const startRecording = () => {
@@ -37,19 +39,46 @@ export const App: React.FC = () => {
     }
   }
 
+  const runAverage = (dataArr) => {
+    let arrayAverage = 0;
+    for (let i = 0; i < dataArr.length; i++) {
+      arrayAverage += dataArr[i];
+    }
+    return arrayAverage / dataArr.length;
+  }
+
   const calculateAnalyser = (features: Meyda.MeydaFeaturesObject) => {
     //Averages spectral centroid over 30 ticks then limits display to previous 100
     spectralSmall.push(features.spectralCentroid);
+    rmsSmall.push((features.rms) * 1000);
+
+    let spectralAverage: number = 0;
+    let rmsAverage: number = 0;
+
     if (spectralSmall.length > 30) {
-      let arrayAverage: number = 0;
       for (let i = 0; i < spectralSmall.length; i++) {
-        arrayAverage += spectralSmall[i];
+        spectralAverage += spectralSmall[i];
+      }
+
+      if (rmsSmall.length > 30) {
+        for (let i = 0; i < rmsSmall.length; i++) {
+          rmsAverage += rmsSmall[i];
+        }
       }
       spectralSmall = [];
+      rmsSmall = [];
+
       setSpectralArray((prevValues) => {
-        const newValues = [...prevValues, (arrayAverage / 30)];
+        const newValues = [...prevValues, (spectralAverage / 30)];
         return newValues.slice(Math.max(newValues.length - 100, 0));
-      })
+      });
+
+      setRmsArray((prevValues) => {
+        const newValues = [...prevValues, (rmsAverage / 30)];
+        return newValues.slice(Math.max(newValues.length - 100, 0));
+      });
+
+
     }
   }
 
@@ -102,12 +131,6 @@ export const App: React.FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (isRecording) {
-
-  //     }
-  //   }
-  // }, [spectralSmall])
 
   useEffect(() => {
     // console.log('Spectral Array length', spectralArray[spectralArray.length - 1]);
@@ -130,7 +153,7 @@ export const App: React.FC = () => {
       </div> */}
 
       <div>
-        <SpectralPlot spectralArray={spectralArray} rms={rms} />
+        <SpectralPlot spectralArray={spectralArray} rmsArray={rmsArray} />
       </div>
     </div>
   )
