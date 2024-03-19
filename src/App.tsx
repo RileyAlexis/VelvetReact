@@ -12,7 +12,7 @@ import { SpectralChart } from './components/SpectralChart';
 import { SpectralPlot } from './components/SpectralPlot';
 
 //Interfaces
-import { AppOptions, AudioData } from './interfaces';
+import { AppOptions } from './interfaces';
 
 
 export const App: React.FC = () => {
@@ -27,6 +27,7 @@ export const App: React.FC = () => {
   const [spectral, setSpectral] = useState<number>(0);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
   const [amplitudeSpectrum, setAmplitudeSpectrum] = useState<Float32Array[] | null>([]);
+  const [perceptualSpread, setPerceptualSpread] = useState<number[]>([]);
 
   const [appOptions, setAppOptions] = useState<AppOptions>({
     averageTicks: 30,
@@ -108,11 +109,11 @@ export const App: React.FC = () => {
           audioContext: audioContext.current,
           source: source,
           bufferSize: 512,
-          featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum'],
+          featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum', 'perceptualSpread'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
-            // setRms(features.rms);
-            // setSpectral(features.spectralCentroid);
-            // amplitudeSpectrum = features.amplitudeSpectrum.map(value => value * 100);
+            setRms(features.rms);
+            setSpectral(features.spectralCentroid);
+            setPerceptualSpread(features.perceptualSpread * 100);
             setAmplitudeSpectrum(features.amplitudeSpectrum.map(value => value * 100));
             calculateAnalyser(features);
 
@@ -196,6 +197,7 @@ export const App: React.FC = () => {
           spectralArray={spectralArray}
           rmsArray={rmsArray}
           amplitudeSpectrum={amplitudeSpectrum}
+          perceptualSpread={perceptualSpread}
         />
       </div>
 

@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from 'react';
-import * as d3 from 'd3_'
 import * as Plot from '@observablehq/plot';
 import { AppOptions } from '../interfaces';
 
@@ -8,11 +7,11 @@ interface SpectralChartProps {
     spectralArray: number[],
     rmsArray: number[],
     amplitudeSpectrum: Float32Array[],
-
+    perceptualSpread: number[],
 }
 
 
-export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, amplitudeSpectrum }) => {
+export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, amplitudeSpectrum, perceptualSpread }) => {
     const plotRef = useRef();
     const width = window.innerWidth - 50;
 
@@ -20,18 +19,22 @@ export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, am
         // console.log(rmsArray);
     }, [rmsArray])
 
+    let audioData = {
+        rms: rmsArray,
+        amplitudeSpectrum: amplitudeSpectrum,
+        spectralArray: spectralArray,
+        perceptualSpread: perceptualSpread
+    }
+
     useEffect(() => {
         if (spectralArray === undefined) return;
-
-        const audioData = {
-            spectral: spectralArray,
-            rms: rmsArray,
-            amplitudeSpectrum: amplitudeSpectrum
-        }
-        // console.log(amplitudeSpectrum[1]);
-
-
+        // console.log(audioData.amplitudeSpectrum);
+        console.log(perceptualSpread);
         const plot = Plot.plot({
+            marginTop: 15,
+            marginLeft: 30,
+            marginBottom: 20,
+            marginRight: 0,
             y: {
                 grid: true,
                 domain: [0, 150],
@@ -43,17 +46,15 @@ export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, am
             },
             marks: [
                 Plot.frame(),
-                // Plot.ruleY([256]),
-                // Plot.barY(amplitudeSpectrum.map((value, index) => ({ x: index, y: value * 10000 })), {
-                //     x: [0, 256],
-                //     fill: 'rgba(0, 0, 255, 0.5)',
-                //     strokeWidth: 0.1,
+                // Plot.lineY(amplitudeSpectrum, {
+                //     // fill: "teal",
+                //     stroke: "teal",
+                //     opacity: 0.2,
                 // }),
 
-                Plot.lineY(amplitudeSpectrum, {
-                    // fill: "teal",
-                    stroke: "teal",
-                    opacity: 0.2,
+                Plot.lineY(perceptualSpread, {
+                    curve: "natural",
+                    stroke: "white",
                 }),
 
                 appOptions.showSpectral ?
@@ -64,16 +65,18 @@ export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, am
 
                 appOptions.showRms ?
                     Plot.lineY(rmsArray, {
+                        curve: "natural",
                         stroke: appOptions.colorRms,
                     }) : null,
 
             ],
             width: width,
+
         })
 
         plotRef.current.append(plot);
         return () => plot.remove();
     }, [spectralArray]);
 
-    return <div ref={plotRef} />;
+    return <div ref={plotRef} style={{ background: 'linear-gradient(to right, #2c8daa, #cb3487)', color: 'white' }} />;
 }
