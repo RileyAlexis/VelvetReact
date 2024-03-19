@@ -11,14 +11,8 @@ import { AnalyzeFile } from './components/AnalyzeFile';
 import { SpectralChart } from './components/SpectralChart';
 import { SpectralPlot } from './components/SpectralPlot';
 
-interface appOptions {
-  averageTicks: number,
-  plotHorizAxis: number,
-  showSpectral: boolean,
-  colorSpectral: string,
-  showRms: boolean,
-  colorRms: string,
-}
+//Interfaces
+import { AppOptions, AudioData } from './interfaces';
 
 
 export const App: React.FC = () => {
@@ -34,7 +28,7 @@ export const App: React.FC = () => {
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
   const [amplitudeSpectrum, setAmplitudeSpectrum] = useState<Float32Array[] | null>([]);
 
-  const [appOptions, setAppOptions] = useState<appOptions>({
+  const [appOptions, setAppOptions] = useState<AppOptions>({
     averageTicks: 30,
     plotHorizAxis: 100,
     showSpectral: true,

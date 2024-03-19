@@ -1,8 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3_'
 import * as Plot from '@observablehq/plot';
+import { AppOptions } from '../interfaces';
 
 interface SpectralChartProps {
+    appOptions: AppOptions,
     spectralArray: number[],
     rmsArray: number[],
     amplitudeSpectrum: Float32Array[],
