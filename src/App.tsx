@@ -68,7 +68,6 @@ export const App: React.FC = () => {
 
     let spectralAverage: number = 0;
     let rmsAverage: number = 0;
-    console.log(averageTicksRef.current);
     if (spectralSmall.length > averageTicksRef.current) {
       for (let i = 0; i < spectralSmall.length; i++) {
         spectralAverage += spectralSmall[i];

@@ -30,14 +30,15 @@ export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray }) 
 
                 appOptions.showSpectral ?
                     Plot.lineY(spectralArray, {
+                        curve: "natural",
                         domain: [0, 100],
-                        stroke: "red",
+                        stroke: appOptions.colorSpectral,
                     }) : null,
 
                 appOptions.showRms ?
                     Plot.lineY(rmsArray, {
                         domain: [0, 100],
-                        stroke: "green"
+                        stroke: appOptions.colorRms,
                     }) : null,
             ],
             width: width,
