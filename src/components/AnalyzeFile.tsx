@@ -10,7 +10,7 @@ interface AnalyzeFileProps {
 
 export const AnalyzeFile: React.FC<AnalyzeFileProps> = ({ setRms, setSpectral, calculateAnalyzer }) => {
 
-    const [mediaStreamSource, setMediaStreamSource] = useState<MediaStreamAudioSourceNode | null>(null);
+    const [_, setMediaStreamSource] = useState<AudioNode | null>(null);
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [isPaused, setIsPaused] = useState<boolean>(true);
     const [isEnded, setIsEnded] = useState<boolean>(false);

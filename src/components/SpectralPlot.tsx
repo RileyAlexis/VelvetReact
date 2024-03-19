@@ -7,29 +7,30 @@ interface SpectralChartProps {
     spectralArray: number[],
     rmsArray: number[],
     amplitudeSpectrum: Float32Array[],
-    perceptualSpread: number[],
+    perceptualSpread: number,
 }
 
 
-export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, amplitudeSpectrum, perceptualSpread }) => {
-    const plotRef = useRef();
-    const width = window.innerWidth - 50;
+export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectralArray, rmsArray }) => {
+    const plotRef = useRef<HTMLDivElement | null>(null);
+    const width: number = window.innerWidth - 50;
 
     useEffect(() => {
         // console.log(rmsArray);
     }, [rmsArray])
 
-    let audioData = {
-        rms: rmsArray,
-        amplitudeSpectrum: amplitudeSpectrum,
-        spectralArray: spectralArray,
-        perceptualSpread: perceptualSpread
-    }
+    // let audioData = {
+    //     rms: rmsArray,
+    //     amplitudeSpectrum: amplitudeSpectrum,
+    //     spectralArray: spectralArray,
+    //     perceptualSpread: perceptualSpread
+    // }
 
     useEffect(() => {
         if (spectralArray === undefined) return;
         // console.log(audioData.amplitudeSpectrum);
-        console.log(perceptualSpread);
+        // console.log(perceptualSpread);
+
         const plot = Plot.plot({
             marginTop: 15,
             marginLeft: 30,
@@ -52,10 +53,10 @@ export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, am
                 //     opacity: 0.2,
                 // }),
 
-                Plot.lineY(perceptualSpread, {
-                    curve: "natural",
-                    stroke: "white",
-                }),
+                // Plot.lineY(perceptualSpread, {
+                //     curve: "natural",
+                //     stroke: "white",
+                // }),
 
                 appOptions.showSpectral ?
                     Plot.lineY(spectralArray, {
@@ -75,6 +76,7 @@ export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, am
         })
 
         plotRef.current.append(plot);
+
         return () => plot.remove();
     }, [spectralArray]);
 

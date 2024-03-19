@@ -8,7 +8,6 @@ import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 
 //Components
 import { AnalyzeFile } from './components/AnalyzeFile';
-import { SpectralChart } from './components/SpectralChart';
 import { SpectralPlot } from './components/SpectralPlot';
 
 //Interfaces
@@ -26,8 +25,8 @@ export const App: React.FC = () => {
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectral, setSpectral] = useState<number>(0);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
-  const [amplitudeSpectrum, setAmplitudeSpectrum] = useState<Float32Array[] | null>([]);
-  const [perceptualSpread, setPerceptualSpread] = useState<number[]>([]);
+  const [amplitudeSpectrum, _] = useState<Float32Array[] | null>(null);
+  const [perceptualSpread, setPerceptualSpread] = useState<number>(0);
 
   const [appOptions, setAppOptions] = useState<AppOptions>({
     averageTicks: 30,
@@ -114,7 +113,7 @@ export const App: React.FC = () => {
             setRms(features.rms);
             setSpectral(features.spectralCentroid);
             setPerceptualSpread(features.perceptualSpread * 100);
-            setAmplitudeSpectrum(features.amplitudeSpectrum.map(value => value * 100));
+            // setAmplitudeSpectrum(features.amplitudeSpectrum.map(value => value * 100));
             calculateAnalyser(features);
 
             // console.log(amplitudeSpectrum);
@@ -174,14 +173,10 @@ export const App: React.FC = () => {
       <br />
       <span>Spectral Centroid: {spectral}</span>
       <AnalyzeFile
-        appOptions={appOptions}
+        // appOptions={appOptions}
         setRms={setRms}
         setSpectral={setSpectral}
         calculateAnalyzer={calculateAnalyser} />
-
-      {/* ∫<div className='chart'>
-        <SpectralChart spectral={spectral} />
-      </div> */}
 
       <div style={{ padding: '10px' }}>
         <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />

@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 
 interface SpectralChartProps {
     spectral: number[]
 }
 
-export const SpectralChart: React.FC<SpectralChartProps> = ({ spectral }) => {
+export const SpectralChart: React.FC<SpectralChartProps> = () => {
 
     const [data, setData] = useState({
         labels: [],
