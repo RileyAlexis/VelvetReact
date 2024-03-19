@@ -22,6 +22,7 @@ export const App: React.FC = () => {
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectral, setSpectral] = useState<number>(0);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
+  const [audioData, setAudioData] = useState<object[]>([{}]);
 
   let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
@@ -37,14 +38,6 @@ export const App: React.FC = () => {
     if (isRecording) {
 
     }
-  }
-
-  const runAverage = (dataArr) => {
-    let arrayAverage = 0;
-    for (let i = 0; i < dataArr.length; i++) {
-      arrayAverage += dataArr[i];
-    }
-    return arrayAverage / dataArr.length;
   }
 
   const calculateAnalyser = (features: Meyda.MeydaFeaturesObject) => {
@@ -77,8 +70,6 @@ export const App: React.FC = () => {
         const newValues = [...prevValues, (rmsAverage / 30)];
         return newValues.slice(Math.max(newValues.length - 100, 0));
       });
-
-
     }
   }
 

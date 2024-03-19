@@ -16,16 +16,23 @@ export const SpectralPlot: React.FC = ({ spectralArray, rmsArray }) => {
 
     useEffect(() => {
         if (spectralArray === undefined) return;
+
+        const audioData = {
+            spectral: spectralArray,
+            rms: rmsArray
+        }
+
+
         const plot = Plot.plot({
             marks: [
                 Plot.frame(),
-                Plot.ruleY([0, 25, 50, 75, 100], { stroke: "lightgreen" }),
+                Plot.ruleY(audioData, { x: [0, 100], y: [0, 150] }),
                 Plot.lineY(spectralArray, {
-                    // x: [0, 1200],
-                    domain: [0, 25, 50, 75, 100],
+                    domain: [0, 100],
                     stroke: "red",
                 }),
                 Plot.lineY(rmsArray, {
+                    domain: [0, 100],
                     stroke: "green"
                 }),
             ],
