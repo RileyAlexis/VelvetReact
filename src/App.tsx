@@ -32,7 +32,7 @@ export const App: React.FC = () => {
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectral, setSpectral] = useState<number>(0);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
-  const [audioData, setAudioData] = useState<object[]>([{}]);
+  const [amplitudeSpectrum, setAmplitudeSpectrum] = useState<Float32Array[] | null>([]);
 
   const [appOptions, setAppOptions] = useState<appOptions>({
     averageTicks: 30,
@@ -47,6 +47,9 @@ export const App: React.FC = () => {
 
   let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
+  // let amplitudeSpectrum: Float32Array[] = [];
+
+  // const amplitudeSpectrumRef = useRef(amplitudeSpectrum);
 
   const startRecording = () => {
     if (!audioContext.current) {
@@ -111,11 +114,15 @@ export const App: React.FC = () => {
           audioContext: audioContext.current,
           source: source,
           bufferSize: 512,
-          featureExtractors: ['rms', 'spectralCentroid'],
+          featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
             // setRms(features.rms);
             // setSpectral(features.spectralCentroid);
+            // amplitudeSpectrum = features.amplitudeSpectrum.map(value => value * 100);
+            setAmplitudeSpectrum(features.amplitudeSpectrum.map(value => value * 100));
             calculateAnalyser(features);
+
+            // console.log(amplitudeSpectrum);
           }
 
         });
@@ -193,7 +200,9 @@ export const App: React.FC = () => {
         <SpectralPlot
           appOptions={appOptions}
           spectralArray={spectralArray}
-          rmsArray={rmsArray} />
+          rmsArray={rmsArray}
+          amplitudeSpectrum={amplitudeSpectrum}
+        />
       </div>
 
 

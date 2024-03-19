@@ -1,12 +1,16 @@
 import React, { useRef, useEffect } from 'react';
+import * as d3 from 'd3_'
 import * as Plot from '@observablehq/plot';
 
 interface SpectralChartProps {
-    spectral: number[]
+    spectralArray: number[],
+    rmsArray: number[],
+    amplitudeSpectrum: Float32Array[],
+
 }
 
 
-export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray }) => {
+export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray, amplitudeSpectrum }) => {
     const plotRef = useRef();
     const width = window.innerWidth - 50;
 
@@ -19,27 +23,48 @@ export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray }) 
 
         const audioData = {
             spectral: spectralArray,
-            rms: rmsArray
+            rms: rmsArray,
+            amplitudeSpectrum: amplitudeSpectrum
         }
+        // console.log(amplitudeSpectrum[1]);
 
 
         const plot = Plot.plot({
+            y: {
+                grid: true,
+                domain: [0, 150],
+                // type: 'log',
+                // tickFormat: ((f) => (x) => f((x - 1) * 100))(d3.format("+d"))
+            },
+            x: {
+                domain: [0, 100]
+            },
             marks: [
                 Plot.frame(),
-                Plot.ruleY(audioData, { x: [0, 100], y: [0, 150] }),
+                // Plot.ruleY([256]),
+                // Plot.barY(amplitudeSpectrum.map((value, index) => ({ x: index, y: value * 10000 })), {
+                //     x: [0, 256],
+                //     fill: 'rgba(0, 0, 255, 0.5)',
+                //     strokeWidth: 0.1,
+                // }),
+
+                Plot.lineY(amplitudeSpectrum, {
+                    // fill: "teal",
+                    stroke: "teal",
+                    opacity: 0.2,
+                }),
 
                 appOptions.showSpectral ?
                     Plot.lineY(spectralArray, {
                         curve: "natural",
-                        domain: [0, 100],
                         stroke: appOptions.colorSpectral,
                     }) : null,
 
                 appOptions.showRms ?
                     Plot.lineY(rmsArray, {
-                        domain: [0, 100],
                         stroke: appOptions.colorRms,
                     }) : null,
+
             ],
             width: width,
         })
