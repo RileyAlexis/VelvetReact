@@ -11,6 +11,16 @@ import { AnalyzeFile } from './components/AnalyzeFile';
 import { SpectralChart } from './components/SpectralChart';
 import { SpectralPlot } from './components/SpectralPlot';
 
+interface appOptions {
+  averageTicks: number,
+  plotHorizAxis: number,
+  showSpectral: boolean,
+  colorSpectral: string,
+  showRms: boolean,
+  colorRms: string,
+}
+
+
 export const App: React.FC = () => {
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -23,6 +33,15 @@ export const App: React.FC = () => {
   const [spectral, setSpectral] = useState<number>(0);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
   const [audioData, setAudioData] = useState<object[]>([{}]);
+
+  const [appOptions, setAppOptions] = useState<appOptions>({
+    averageTicks: 30,
+    plotHorizAxis: 100,
+    showSpectral: true,
+    colorSpectral: '#fa9ef2',
+    showRms: true,
+    colorRms: '#f2fa9e'
+  })
 
   let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
@@ -48,12 +67,12 @@ export const App: React.FC = () => {
     let spectralAverage: number = 0;
     let rmsAverage: number = 0;
 
-    if (spectralSmall.length > 30) {
+    if (spectralSmall.length > appOptions.averageTicks) {
       for (let i = 0; i < spectralSmall.length; i++) {
         spectralAverage += spectralSmall[i];
       }
 
-      if (rmsSmall.length > 30) {
+      if (rmsSmall.length > appOptions.averageTicks) {
         for (let i = 0; i < rmsSmall.length; i++) {
           rmsAverage += rmsSmall[i];
         }
@@ -62,12 +81,12 @@ export const App: React.FC = () => {
       rmsSmall = [];
 
       setSpectralArray((prevValues) => {
-        const newValues = [...prevValues, (spectralAverage / 30)];
+        const newValues = [...prevValues, (spectralAverage / appOptions.averageTicks)];
         return newValues.slice(Math.max(newValues.length - 100, 0));
       });
 
       setRmsArray((prevValues) => {
-        const newValues = [...prevValues, (rmsAverage / 30)];
+        const newValues = [...prevValues, (rmsAverage / appOptions.averageTicks)];
         return newValues.slice(Math.max(newValues.length - 100, 0));
       });
     }
@@ -93,8 +112,8 @@ export const App: React.FC = () => {
           bufferSize: 512,
           featureExtractors: ['rms', 'spectralCentroid'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
-            setRms(features.rms);
-            setSpectral(features.spectralCentroid);
+            // setRms(features.rms);
+            // setSpectral(features.spectralCentroid);
             calculateAnalyser(features);
           }
 
@@ -125,7 +144,14 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     // console.log('Spectral Array length', spectralArray[spectralArray.length - 1]);
-  }, [spectralArray])
+  }, [spectralArray]);
+
+  const handleShowRms = () => {
+    setAppOptions(prevOptions => ({
+      ...prevOptions,
+      showRms: !appOptions.showRms
+    }))
+  }
 
   return (
     <div>
@@ -135,6 +161,7 @@ export const App: React.FC = () => {
       <br />
       <span>Spectral Centroid: {spectral}</span>
       <AnalyzeFile
+        appOptions={appOptions}
         setRms={setRms}
         setSpectral={setSpectral}
         calculateAnalyzer={calculateAnalyser} />
@@ -143,9 +170,20 @@ export const App: React.FC = () => {
         <SpectralChart spectral={spectral} />
       </div> */}
 
-      <div>
-        <SpectralPlot spectralArray={spectralArray} rmsArray={rmsArray} />
+      <div style={{ padding: '10px' }}>
+        <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />
+        <label>Show Levels</label>
       </div>
+
+
+      <div>
+        <SpectralPlot
+          appOptions={appOptions}
+          spectralArray={spectralArray}
+          rmsArray={rmsArray} />
+      </div>
+
+
     </div>
   )
 }

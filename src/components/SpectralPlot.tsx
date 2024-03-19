@@ -6,7 +6,7 @@ interface SpectralChartProps {
 }
 
 
-export const SpectralPlot: React.FC = ({ spectralArray, rmsArray }) => {
+export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray }) => {
     const plotRef = useRef();
     const width = window.innerWidth - 50;
 
@@ -27,14 +27,18 @@ export const SpectralPlot: React.FC = ({ spectralArray, rmsArray }) => {
             marks: [
                 Plot.frame(),
                 Plot.ruleY(audioData, { x: [0, 100], y: [0, 150] }),
-                Plot.lineY(spectralArray, {
-                    domain: [0, 100],
-                    stroke: "red",
-                }),
-                Plot.lineY(rmsArray, {
-                    domain: [0, 100],
-                    stroke: "green"
-                }),
+
+                appOptions.showSpectral ?
+                    Plot.lineY(spectralArray, {
+                        domain: [0, 100],
+                        stroke: "red",
+                    }) : null,
+
+                appOptions.showRms ?
+                    Plot.lineY(rmsArray, {
+                        domain: [0, 100],
+                        stroke: "green"
+                    }) : null,
             ],
             width: width,
         })
