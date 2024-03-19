@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import meyda from 'meyda';
 
 import { Button } from '@mui/material';
@@ -43,6 +43,8 @@ export const App: React.FC = () => {
     colorRms: '#f2fa9e'
   })
 
+  const averageTicksRef = useRef(appOptions.averageTicks);
+
   let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
 
@@ -59,20 +61,20 @@ export const App: React.FC = () => {
     }
   }
 
-  const calculateAnalyser = (features: Meyda.MeydaFeaturesObject) => {
+  const calculateAnalyser = useCallback((features: Meyda.MeydaFeaturesObject) => {
     //Averages spectral centroid over 30 ticks then limits display to previous 100
     spectralSmall.push(features.spectralCentroid);
     rmsSmall.push((features.rms) * 1000);
 
     let spectralAverage: number = 0;
     let rmsAverage: number = 0;
-
-    if (spectralSmall.length > appOptions.averageTicks) {
+    console.log(averageTicksRef.current);
+    if (spectralSmall.length > averageTicksRef.current) {
       for (let i = 0; i < spectralSmall.length; i++) {
         spectralAverage += spectralSmall[i];
       }
 
-      if (rmsSmall.length > appOptions.averageTicks) {
+      if (rmsSmall.length > averageTicksRef.current) {
         for (let i = 0; i < rmsSmall.length; i++) {
           rmsAverage += rmsSmall[i];
         }
@@ -81,16 +83,16 @@ export const App: React.FC = () => {
       rmsSmall = [];
 
       setSpectralArray((prevValues) => {
-        const newValues = [...prevValues, (spectralAverage / appOptions.averageTicks)];
+        const newValues = [...prevValues, (spectralAverage / averageTicksRef.current)];
         return newValues.slice(Math.max(newValues.length - 100, 0));
       });
 
       setRmsArray((prevValues) => {
-        const newValues = [...prevValues, (rmsAverage / appOptions.averageTicks)];
+        const newValues = [...prevValues, (rmsAverage / averageTicksRef.current)];
         return newValues.slice(Math.max(newValues.length - 100, 0));
       });
     }
-  }
+  }, [appOptions]);
 
   const startAnalyzer = async () => {
 
@@ -141,6 +143,9 @@ export const App: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    averageTicksRef.current = appOptions.averageTicks;
+  }, [appOptions.averageTicks]);
 
   useEffect(() => {
     // console.log('Spectral Array length', spectralArray[spectralArray.length - 1]);
@@ -150,6 +155,13 @@ export const App: React.FC = () => {
     setAppOptions(prevOptions => ({
       ...prevOptions,
       showRms: !appOptions.showRms
+    }))
+  };
+
+  const handleSetTicks = (ticks: number) => {
+    setAppOptions(prevOptions => ({
+      ...prevOptions,
+      averageTicks: ticks
     }))
   }
 
@@ -173,6 +185,8 @@ export const App: React.FC = () => {
       <div style={{ padding: '10px' }}>
         <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />
         <label>Show Levels</label>
+        <input type='range' min={1} max={100} onChange={(e) => handleSetTicks(parseInt(e.target.value))} value={appOptions.averageTicks} />
+        <label>Average Ticks - {appOptions.averageTicks}</label>
       </div>
 
 

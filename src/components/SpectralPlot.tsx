@@ -11,7 +11,7 @@ export const SpectralPlot: React.FC = ({ appOptions, spectralArray, rmsArray }) 
     const width = window.innerWidth - 50;
 
     useEffect(() => {
-        console.log(rmsArray);
+        // console.log(rmsArray);
     }, [rmsArray])
 
     useEffect(() => {
