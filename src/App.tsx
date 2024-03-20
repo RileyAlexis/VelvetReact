@@ -132,10 +132,27 @@ export const App: React.FC = () => {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         source = audioContext.current?.createMediaStreamSource(stream);
 
-        const filterNode = audioContext.current.createBiquadFilter();
-        filterNode.type = 'lowpass';
-        filterNode.frequency.value = 1000; // Set the cutoff frequency
-        source.connect(filterNode);
+        //Bandpass filter reduces non-voice frequencies
+        const bandpass = audioContext.current.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        bandpass.frequency.value = 1000;
+        bandpass.Q.value = 1;
+
+        //Set low pass filter to reduce noise
+        const lowpass = audioContext.current.createBiquadFilter();
+        lowpass.type = 'lowpass';
+        lowpass.frequency.value = 5000; // Set the cutoff frequency
+
+        const highpass = audioContext.current.createBiquadFilter();
+        highpass.type = 'highpass';
+        highpass.frequency.value = 300;
+
+
+
+        //Connect filters to audiocontext
+        source.connect(bandpass);
+        bandpass.connect(lowpass);
+        lowpass.connect(highpass);
 
         setMediaStream(source);
 
@@ -146,11 +163,17 @@ export const App: React.FC = () => {
           featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum', 'perceptualSpread'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
             spectralSmall.push(features.spectralCentroid);
+            rmsSmall.push(features.rms * 500);
             if (spectralSmall.length > 1000) {
               spectralSmall = spectralSmall.slice(-1000);
             }
-            setSpectralArray(movingWindowFilter(spectralSmall));
+            if (rmsSmall.length > 1000) {
+              rmsSmall = rmsSmall.slice(-1000);
+            }
 
+
+            setSpectralArray(movingWindowFilter(spectralSmall));
+            setRmsArray(movingWindowFilter(rmsSmall));
 
             setRms(features.rms);
             setSpectral(features.spectralCentroid);
@@ -191,7 +214,8 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     // console.log('Spectral Array length', spectralArray[spectralArray.length - 1]);
-  }, [spectralArray]);
+    // console.log(rmsArray);
+  }, [rmsArray]);
 
   const handleShowRms = () => {
     setAppOptions(prevOptions => ({

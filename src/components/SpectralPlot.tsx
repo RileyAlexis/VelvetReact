@@ -66,7 +66,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectra
                     }) : null,
 
                 appOptions.showRms ?
-                    Plot.lineY(perceptualSpreadArray, {
+                    Plot.lineY(rmsArray, {
                         curve: "natural",
                         stroke: appOptions.colorRms,
                     }) : null,
