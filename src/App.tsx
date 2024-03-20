@@ -7,7 +7,6 @@ import './App.css'
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 
 //Components
-import { AnalyzeFile } from './components/AnalyzeFile';
 import { SpectralPlot } from './components/SpectralPlot';
 
 //Interfaces
