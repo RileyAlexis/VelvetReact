@@ -11,9 +11,10 @@ interface SpectralChartProps {
 }
 
 
-export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectralArray, rmsArray }) => {
+export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray }) => {
     const plotRef = useRef<HTMLDivElement | null>(null);
     const width: number = window.innerWidth - 50;
+    const height: number = window.innerHeight * .5;
 
     useEffect(() => {
         // console.log(rmsArray);
@@ -35,7 +36,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectra
             marginTop: 15,
             marginLeft: 30,
             marginBottom: 20,
-            marginRight: 0,
+            marginRight: 15,
             y: {
                 grid: true,
                 domain: [0, 150],
@@ -65,13 +66,14 @@ export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectra
                     }) : null,
 
                 appOptions.showRms ?
-                    Plot.lineY(rmsArray, {
+                    Plot.lineY(perceptualSpreadArray, {
                         curve: "natural",
                         stroke: appOptions.colorRms,
                     }) : null,
 
             ],
             width: width,
+            height: height,
 
         })
 

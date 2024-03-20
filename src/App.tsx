@@ -27,6 +27,7 @@ export const App: React.FC = () => {
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
   const [amplitudeSpectrum, _] = useState<Float32Array[] | null>(null);
   const [perceptualSpread, setPerceptualSpread] = useState<number>(0);
+  const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
 
   const [appOptions, setAppOptions] = useState<AppOptions>({
     averageTicks: 30,
@@ -41,6 +42,7 @@ export const App: React.FC = () => {
 
   let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
+  let perceptualSpreadSmall: number[] = [];
   // let amplitudeSpectrum: Float32Array[] = [];
 
   // const amplitudeSpectrumRef = useRef(amplitudeSpectrum);
@@ -58,13 +60,27 @@ export const App: React.FC = () => {
     }
   }
 
+  const movingWindowFilter = useCallback((data: number[]) => {
+    const dataSum = [0];
+    for (let i = 0; i < data.length; i++) {
+      dataSum[i + 1] = dataSum[i] + data[i];
+    }
+
+    return dataSum.slice(averageTicksRef.current).map((value, index) =>
+      (value - dataSum[index]) / averageTicksRef.current);
+  }, [appOptions]);
+
   const calculateAnalyser = useCallback((features: Meyda.MeydaFeaturesObject) => {
     //Averages spectral centroid over 30 ticks then limits display to previous 100
     spectralSmall.push(features.spectralCentroid);
     rmsSmall.push((features.rms) * 1000);
+    perceptualSpreadSmall.push(features.perceptualSpread * 100);
+
 
     let spectralAverage: number = 0;
     let rmsAverage: number = 0;
+    let perceptualSpreadAverage = 0;
+
     if (spectralSmall.length > averageTicksRef.current) {
       for (let i = 0; i < spectralSmall.length; i++) {
         spectralAverage += spectralSmall[i];
@@ -75,8 +91,22 @@ export const App: React.FC = () => {
           rmsAverage += rmsSmall[i];
         }
       }
+
+      if (perceptualSpreadSmall.length > averageTicksRef.current) {
+        for (let i = 0; i < perceptualSpreadSmall.length; i++) {
+          perceptualSpreadAverage += perceptualSpreadSmall[i];
+        }
+      }
+
+
       spectralSmall = [];
       rmsSmall = [];
+      perceptualSpreadSmall = [];
+
+      setPerceptualSpreadArray((prevValues) => {
+        const newValues = [...prevValues, (perceptualSpreadAverage / averageTicksRef.current)];
+        return newValues.slice(Math.max(newValues.length - 100, 0));
+      })
 
       setSpectralArray((prevValues) => {
         const newValues = [...prevValues, (spectralAverage / averageTicksRef.current)];
@@ -99,7 +129,6 @@ export const App: React.FC = () => {
         let stream: MediaStream | null = null;
         let source: MediaStreamAudioSourceNode | null = null;
 
-
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         source = audioContext.current?.createMediaStreamSource(stream);
         setMediaStream(source);
@@ -110,11 +139,18 @@ export const App: React.FC = () => {
           bufferSize: 512,
           featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum', 'perceptualSpread'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
+            spectralSmall.push(features.spectralCentroid);
+            if (spectralSmall.length > 100) {
+              spectralSmall = spectralSmall.slice(-100);
+            }
+            setSpectralArray(movingWindowFilter(spectralSmall));
+
+
             setRms(features.rms);
             setSpectral(features.spectralCentroid);
             setPerceptualSpread(features.perceptualSpread * 100);
             // setAmplitudeSpectrum(features.amplitudeSpectrum.map(value => value * 100));
-            calculateAnalyser(features);
+            // calculateAnalyser(features);
 
             // console.log(amplitudeSpectrum);
           }
@@ -172,6 +208,8 @@ export const App: React.FC = () => {
       <span>RMS: {rms}</span>
       <br />
       <span>Spectral Centroid: {spectral}</span>
+      <br />
+      <span>Perceptual Spread: {perceptualSpread}</span>
       <AnalyzeFile
         // appOptions={appOptions}
         setRms={setRms}
@@ -192,7 +230,7 @@ export const App: React.FC = () => {
           spectralArray={spectralArray}
           rmsArray={rmsArray}
           amplitudeSpectrum={amplitudeSpectrum}
-          perceptualSpread={perceptualSpread}
+          perceptualSpreadArray={perceptualSpreadArray}
         />
       </div>
 
