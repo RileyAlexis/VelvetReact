@@ -135,13 +135,13 @@ export const App: React.FC = () => {
         //Bandpass filter reduces non-voice frequencies
         const bandpass = audioContext.current.createBiquadFilter();
         bandpass.type = 'bandpass';
-        bandpass.frequency.value = 1000;
+        bandpass.frequency.value = 3000;
         bandpass.Q.value = 1;
 
         //Set low pass filter to reduce noise
         const lowpass = audioContext.current.createBiquadFilter();
         lowpass.type = 'lowpass';
-        lowpass.frequency.value = 5000; // Set the cutoff frequency
+        lowpass.frequency.value = 2000; // Set the cutoff frequency
 
         const highpass = audioContext.current.createBiquadFilter();
         highpass.type = 'highpass';
@@ -153,12 +153,13 @@ export const App: React.FC = () => {
         source.connect(bandpass);
         bandpass.connect(lowpass);
         lowpass.connect(highpass);
+        // highpass.connect(analyzer);
 
         setMediaStream(source);
 
         const analyzer = meyda.createMeydaAnalyzer({
           audioContext: audioContext.current,
-          source: source,
+          source: highpass,
           bufferSize: 512,
           featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum', 'perceptualSpread'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
