@@ -21,11 +21,8 @@ export const App: React.FC = () => {
   const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | null>(null);
   const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
-  const [rms, setRms] = useState<number | null>(null);
   const [rmsArray, setRmsArray] = useState<number[]>([]);
-  const [spectral, setSpectral] = useState<number>(0);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
-  const [perceptualSpread, setPerceptualSpread] = useState<number>(0);
   const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
 
   const [appOptions, setAppOptions] = useState<AppOptions>({
@@ -73,56 +70,6 @@ export const App: React.FC = () => {
       (value - dataSum[index]) / averageTicksRef.current);
   }, [appOptions]);
 
-  const calculateAnalyser = useCallback((features: Meyda.MeydaFeaturesObject) => {
-    //Averages spectral centroid over 30 ticks then limits display to previous 100
-    spectralSmall.push(features.spectralCentroid);
-    rmsSmall.push((features.rms) * 1000);
-    perceptualSpreadSmall.push(features.perceptualSpread * 100);
-
-
-    let spectralAverage: number = 0;
-    let rmsAverage: number = 0;
-    let perceptualSpreadAverage = 0;
-
-    if (spectralSmall.length > averageTicksRef.current) {
-      for (let i = 0; i < spectralSmall.length; i++) {
-        spectralAverage += spectralSmall[i];
-      }
-
-      if (rmsSmall.length > averageTicksRef.current) {
-        for (let i = 0; i < rmsSmall.length; i++) {
-          rmsAverage += rmsSmall[i];
-        }
-      }
-
-      if (perceptualSpreadSmall.length > averageTicksRef.current) {
-        for (let i = 0; i < perceptualSpreadSmall.length; i++) {
-          perceptualSpreadAverage += perceptualSpreadSmall[i];
-        }
-      }
-
-
-      spectralSmall = [];
-      rmsSmall = [];
-      perceptualSpreadSmall = [];
-
-      setPerceptualSpreadArray((prevValues) => {
-        const newValues = [...prevValues, (perceptualSpreadAverage / averageTicksRef.current)];
-        return newValues.slice(Math.max(newValues.length - 100, 0));
-      })
-
-      setSpectralArray((prevValues) => {
-        const newValues = [...prevValues, (spectralAverage / averageTicksRef.current)];
-        return newValues.slice(Math.max(newValues.length - 100, 0));
-      });
-
-      setRmsArray((prevValues) => {
-        const newValues = [...prevValues, (rmsAverage / averageTicksRef.current)];
-        return newValues.slice(Math.max(newValues.length - 100, 0));
-      });
-    }
-  }, [appOptions]);
-
   const startAnalyzer = async () => {
 
     audioContext.current?.resume();
@@ -166,9 +113,13 @@ export const App: React.FC = () => {
           bufferSize: 512,
           featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
-            spectralSmall.push(features.spectralCentroid);
+
+            //First 5 values on spectralCentroid and perceptualSpread are NaN
+            //If statement ensures the data shows on the graph immediately instead of
+            //after 30 updates
+            if (features.spectralCentroid) spectralSmall.push(features.spectralCentroid);
             rmsSmall.push(features.rms * 500);
-            perceptualSpreadSmall.push(features.perceptualSpread * 50);
+            if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
 
             if (spectralSmall.length >= dataLengthRef.current) {
               spectralSmall = spectralSmall.slice(-dataLengthRef.current);
@@ -180,18 +131,9 @@ export const App: React.FC = () => {
               perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
             }
 
-
-
             setSpectralArray(movingWindowFilter(spectralSmall));
             setRmsArray(movingWindowFilter(rmsSmall));
             setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
-
-            setRms(features.rms);
-            setSpectral(features.spectralCentroid);
-            setPerceptualSpread(features.perceptualSpread * 100);
-            // calculateAnalyser(features);
-
-            // console.log(amplitudeSpectrum);
           }
 
         });
@@ -223,11 +165,6 @@ export const App: React.FC = () => {
     dataLengthRef.current = appOptions.dataLength;
   }, [appOptions.averageTicks, appOptions.dataLength]);
 
-  useEffect(() => {
-    // console.log('Spectral Array length', spectralArray[spectralArray.length - 1]);
-    // console.log(rmsArray);
-  }, [rmsArray]);
-
   const handleShowRms = () => {
     setAppOptions(prevOptions => ({
       ...prevOptions,
@@ -246,16 +183,16 @@ export const App: React.FC = () => {
     <div>
       <Button onMouseDown={startRecording}>Mic {JSON.stringify(isRecording)}</Button>
       <br />
-      <span>RMS: {rms}</span>
+      <span>RMS: {rmsArray[rmsArray.length - 1]}</span>
       <br />
-      <span>Spectral Centroid: {spectral}</span>
+      <span>Spectral Centroid: {spectralArray[spectralArray.length - 1]}</span>
       <br />
-      <span>Perceptual Spread: {perceptualSpread}</span>
-      <AnalyzeFile
+      <span>Perceptual Spread: {perceptualSpreadArray[perceptualSpreadArray.length - 1]}</span>
+      {/* <AnalyzeFile
         // appOptions={appOptions}
         setRms={setRms}
         setSpectral={setSpectral}
-        calculateAnalyzer={calculateAnalyser} />
+        calculateAnalyzer={calculateAnalyser} /> */}
 
       <div style={{ padding: '10px' }}>
         <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />

@@ -10,79 +10,94 @@ interface SpectralChartProps {
 }
 
 
-export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray }) => {
-    const plotRef = useRef<HTMLDivElement | null>(null);
-    const width: number = window.innerWidth - 50;
-    const height: number = window.innerHeight * .5;
+export const SpectralPlot: React.FC<SpectralChartProps> =
+    ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray }) => {
 
-    useEffect(() => {
-        // console.log(audioObject);
-    }, [spectralArray])
+        const plotRef = useRef<HTMLDivElement | null>(null);
+        const width: number = window.innerWidth - 50;
+        const height: number = window.innerHeight * .5;
 
-    useEffect(() => {
-        if (spectralArray === undefined) return;
+        useEffect(() => {
+            // console.log(spectralArray.length);
+            // console.log(rmsArray.length);
+            // console.log(perceptualSpreadArray.length);
+        }, [spectralArray])
 
-        const plot = Plot.plot({
-            marginTop: 15,
-            marginLeft: 30,
-            marginBottom: 20,
-            marginRight: 15,
-            y: {
-                grid: true,
-                domain: [0, 100],
-                // type: 'log',
-                // tickFormat: ((f) => (x) => f((x - 1) * 100))(d3.format("+d"))
-            },
-            x: {
-                domain: [0, appOptions.dataLength]
-            },
-            marks: [
-                Plot.frame(),
-                appOptions.showPerceptual ?
-                    Plot.lineY(perceptualSpreadArray, {
-                        curve: "natural",
-                        stroke: appOptions.colorPerceptual,
-                    }) : null,
+        useEffect(() => {
+            if (spectralArray === undefined) return;
 
-                appOptions.showSpectral ?
-                    Plot.lineY(spectralArray, {
-                        curve: "natural",
-                        stroke: appOptions.colorSpectral,
-                    }) : null,
+            const plot = Plot.plot({
+                marginTop: 15,
+                marginLeft: 30,
+                marginBottom: 20,
+                marginRight: 15,
+                y: {
+                    grid: true,
+                    domain: [0, 100],
+                    // type: 'log',
+                    // tickFormat: ((f) => (x) => f((x - 1) * 100))(d3.format("+d"))
+                },
+                x: {
+                    domain: [0, appOptions.dataLength]
+                },
+                marks: [
+                    Plot.frame(),
+                    appOptions.showPerceptual ?
+                        Plot.lineY(perceptualSpreadArray, {
+                            curve: "natural",
+                            stroke: appOptions.colorPerceptual,
+                        }) : null,
 
-                appOptions.showRms ?
-                    Plot.lineY(rmsArray, {
-                        curve: "natural",
-                        stroke: appOptions.colorRms,
-                    }) : null,
+                    appOptions.showSpectral ?
+                        Plot.lineY(spectralArray, {
+                            curve: "natural",
+                            stroke: appOptions.colorSpectral,
+                        }) : null,
 
-            ],
-            width: width,
-            height: height,
-        })
+                    appOptions.showRms ?
+                        Plot.lineY(rmsArray, {
+                            curve: "natural",
+                            stroke: appOptions.colorRms,
+                        }) : null,
 
-        plotRef.current.append(plot);
+                ],
+                width: width,
+                height: height,
+            })
 
-        return () => plot.remove();
-    }, [spectralArray]);
+            plotRef.current.append(plot);
 
-    return (
-        <div>
-            <div className='legendContainer'>
-                <div className='legendItem'>
-                    <div className='legendSwatch' style={{ background: appOptions.colorSpectral }}></div>
-                    <div className='legendText'>Spectral Centroid</div>
+            return () => plot.remove();
+        }, [spectralArray]);
+
+        return (
+            <div>
+                <div className='legendContainer'>
+                    <div className='legendItem'>
+                        <div
+                            className='legendSwatch'
+                            style={{ background: appOptions.colorSpectral }}></div>
+                        <div className='legendText'>Spectral Centroid</div>
+                    </div>
+                    <div className='legendItem'>
+                        <div
+                            className='legendSwatch'
+                            style={{ background: appOptions.colorRms }}></div>
+                        <div className='legendText'>Root Mean Square</div>
+                    </div>
+                    <div className='legendItem'>
+                        <div
+                            className='legendSwatch'
+                            style={{ background: appOptions.colorPerceptual }}></div>
+                        <div
+                            className='legendText'>Perceptual Spread</div>
+                    </div>
                 </div>
-                <div className='legendItem'>
-                    <div className='legendSwatch' style={{ background: appOptions.colorRms }}></div>
-                    <div className='legendText'>Root Mean Square</div>
-                </div>
-                <div className='legendItem'>
-                    <div className='legendSwatch' style={{ background: appOptions.colorPerceptual }}></div>
-                    <div className='legendText'>Perceptual Spread</div>
-                </div>
+                <div ref={plotRef}
+                    style={{
+                        background: 'linear-gradient(to right, #2c8daa, #cb3487)',
+                        color: 'white'
+                    }} />
             </div>
-            <div ref={plotRef} style={{ background: 'linear-gradient(to right, #2c8daa, #cb3487)', color: 'white' }} />
-        </div>
-    )
-}
+        )
+    }
