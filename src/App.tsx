@@ -131,6 +131,12 @@ export const App: React.FC = () => {
 
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         source = audioContext.current?.createMediaStreamSource(stream);
+
+        const filterNode = audioContext.current.createBiquadFilter();
+        filterNode.type = 'lowpass';
+        filterNode.frequency.value = 1000; // Set the cutoff frequency
+        source.connect(filterNode);
+
         setMediaStream(source);
 
         const analyzer = meyda.createMeydaAnalyzer({
@@ -140,8 +146,8 @@ export const App: React.FC = () => {
           featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum', 'perceptualSpread'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
             spectralSmall.push(features.spectralCentroid);
-            if (spectralSmall.length > 100) {
-              spectralSmall = spectralSmall.slice(-100);
+            if (spectralSmall.length > 1000) {
+              spectralSmall = spectralSmall.slice(-1000);
             }
             setSpectralArray(movingWindowFilter(spectralSmall));
 

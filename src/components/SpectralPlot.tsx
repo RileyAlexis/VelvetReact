@@ -44,7 +44,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectra
                 // tickFormat: ((f) => (x) => f((x - 1) * 100))(d3.format("+d"))
             },
             x: {
-                domain: [0, 100]
+                domain: [0, 1000]
             },
             marks: [
                 Plot.frame(),
