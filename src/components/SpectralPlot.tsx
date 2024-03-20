@@ -6,8 +6,7 @@ interface SpectralChartProps {
     appOptions: AppOptions,
     spectralArray: number[],
     rmsArray: number[],
-    amplitudeSpectrum: Float32Array[],
-    perceptualSpread: number,
+    perceptualSpreadArray: number[],
 }
 
 
@@ -17,20 +16,11 @@ export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectra
     const height: number = window.innerHeight * .5;
 
     useEffect(() => {
-        // console.log(rmsArray);
-    }, [rmsArray])
-
-    // let audioData = {
-    //     rms: rmsArray,
-    //     amplitudeSpectrum: amplitudeSpectrum,
-    //     spectralArray: spectralArray,
-    //     perceptualSpread: perceptualSpread
-    // }
+        // console.log(audioObject);
+    }, [spectralArray])
 
     useEffect(() => {
         if (spectralArray === undefined) return;
-        // console.log(audioData.amplitudeSpectrum);
-        // console.log(perceptualSpread);
 
         const plot = Plot.plot({
             marginTop: 15,
@@ -48,16 +38,11 @@ export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectra
             },
             marks: [
                 Plot.frame(),
-                // Plot.lineY(amplitudeSpectrum, {
-                //     // fill: "teal",
-                //     stroke: "teal",
-                //     opacity: 0.2,
-                // }),
-
-                // Plot.lineY(perceptualSpread, {
-                //     curve: "natural",
-                //     stroke: "white",
-                // }),
+                appOptions.showPerceptual ?
+                    Plot.lineY(perceptualSpreadArray, {
+                        curve: "natural",
+                        stroke: appOptions.colorPerceptual,
+                    }) : null,
 
                 appOptions.showSpectral ?
                     Plot.lineY(spectralArray, {
@@ -74,7 +59,6 @@ export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectra
             ],
             width: width,
             height: height,
-
         })
 
         plotRef.current.append(plot);
@@ -82,5 +66,23 @@ export const SpectralPlot: React.FC<SpectralChartProps> = ({ appOptions, spectra
         return () => plot.remove();
     }, [spectralArray]);
 
-    return <div ref={plotRef} style={{ background: 'linear-gradient(to right, #2c8daa, #cb3487)', color: 'white' }} />;
+    return (
+        <div>
+            <div className='legendContainer'>
+                <div className='legendItem'>
+                    <div className='legendSwatch' style={{ background: appOptions.colorSpectral }}></div>
+                    <div className='legendText'>Spectral Centroid</div>
+                </div>
+                <div className='legendItem'>
+                    <div className='legendSwatch' style={{ background: appOptions.colorRms }}></div>
+                    <div className='legendText'>Root Mean Square</div>
+                </div>
+                <div className='legendItem'>
+                    <div className='legendSwatch' style={{ background: appOptions.colorPerceptual }}></div>
+                    <div className='legendText'>Perceptual Spread</div>
+                </div>
+            </div>
+            <div ref={plotRef} style={{ background: 'linear-gradient(to right, #2c8daa, #cb3487)', color: 'white' }} />
+        </div>
+    )
 }

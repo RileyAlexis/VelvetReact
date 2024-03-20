@@ -5,11 +5,14 @@ export interface AppOptions {
     colorSpectral: string,
     showRms: boolean,
     colorRms: string,
+    showPerceptual: boolean,
+    colorPerceptual: string,
     dataLength: number,
 }
 
 export interface AudioData {
-    rms: number[] | null,
-    spectralCentroid: number[] | null,
-    amplitudeSpectrum: Float32Array[] | null,
+    time: number,
+    rms: number,
+    spectralCentroid: number,
+    perceptualSpread: number,
 }

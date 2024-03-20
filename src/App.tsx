@@ -25,7 +25,6 @@ export const App: React.FC = () => {
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectral, setSpectral] = useState<number>(0);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
-  const [amplitudeSpectrum, _] = useState<Float32Array[] | null>(null);
   const [perceptualSpread, setPerceptualSpread] = useState<number>(0);
   const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
 
@@ -36,6 +35,8 @@ export const App: React.FC = () => {
     colorSpectral: '#fa9ef2',
     showRms: true,
     colorRms: '#f2fa9e',
+    showPerceptual: true,
+    colorPerceptual: '#fff',
     dataLength: 1000,
   })
 
@@ -163,26 +164,31 @@ export const App: React.FC = () => {
           audioContext: audioContext.current,
           source: highpass,
           bufferSize: 512,
-          featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum', 'perceptualSpread'],
+          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
             spectralSmall.push(features.spectralCentroid);
-            console.log(dataLengthRef.current);
             rmsSmall.push(features.rms * 500);
+            perceptualSpreadSmall.push(features.perceptualSpread * 50);
+
             if (spectralSmall.length >= dataLengthRef.current) {
               spectralSmall = spectralSmall.slice(-dataLengthRef.current);
             }
             if (rmsSmall.length >= dataLengthRef.current) {
               rmsSmall = rmsSmall.slice(-dataLengthRef.current);
             }
+            if (perceptualSpreadSmall.length >= dataLengthRef.current) {
+              perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
+            }
+
 
 
             setSpectralArray(movingWindowFilter(spectralSmall));
             setRmsArray(movingWindowFilter(rmsSmall));
+            setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
 
             setRms(features.rms);
             setSpectral(features.spectralCentroid);
             setPerceptualSpread(features.perceptualSpread * 100);
-            // setAmplitudeSpectrum(features.amplitudeSpectrum.map(value => value * 100));
             // calculateAnalyser(features);
 
             // console.log(amplitudeSpectrum);
@@ -264,7 +270,6 @@ export const App: React.FC = () => {
           appOptions={appOptions}
           spectralArray={spectralArray}
           rmsArray={rmsArray}
-          amplitudeSpectrum={amplitudeSpectrum}
           perceptualSpreadArray={perceptualSpreadArray}
         />
       </div>
