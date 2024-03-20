@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import meyda from 'meyda';
 
-import { Button } from '@mui/material';
+//Material UI
+import { IconButton } from '@mui/material';
+import { makeStyles } from '@mui/material';
+import MicIcon from '@mui/icons-material/Mic';
+import MicOffIcon from '@mui/icons-material/MicOff';
 
 import './App.css'
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
@@ -14,7 +18,6 @@ import { AppOptions } from './interfaces';
 
 
 export const App: React.FC = () => {
-
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const audioContext = useRef<AudioContext | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | null>(null);
@@ -51,12 +54,10 @@ export const App: React.FC = () => {
       audioContext.current = new AudioContext();
       startAnalyzer();
     }
-    if (audioContext) {
+    if (audioContext.current) {
       startAnalyzer();
     }
-    if (isRecording) {
 
-    }
   }
 
   const movingWindowFilter = useCallback((data: number[]) => {
@@ -96,13 +97,10 @@ export const App: React.FC = () => {
         highpass.type = 'highpass';
         highpass.frequency.value = 300;
 
-
-
         //Connect filters to audiocontext
         source.connect(bandpass);
         bandpass.connect(lowpass);
         lowpass.connect(highpass);
-        // highpass.connect(analyzer);
 
         setMediaStream(source);
 
@@ -116,7 +114,9 @@ export const App: React.FC = () => {
             //First 5 values on spectralCentroid and perceptualSpread are NaN
             //If statement ensures the data shows on the graph immediately instead of
             //after 30 updates
-            if (features.spectralCentroid) spectralSmall.push(features.spectralCentroid);
+            if (features.spectralCentroid) {
+              spectralSmall.push(features.spectralCentroid);
+            }
             rmsSmall.push(features.rms * 500);
             if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
 
@@ -129,7 +129,6 @@ export const App: React.FC = () => {
             if (perceptualSpreadSmall.length >= dataLengthRef.current) {
               perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
             }
-
             setSpectralArray(movingWindowFilter(spectralSmall));
             setRmsArray(movingWindowFilter(rmsSmall));
             setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
@@ -149,7 +148,6 @@ export const App: React.FC = () => {
       if (mediaStream) {
         // mediaStream.disconnect();
         audioContext.current?.suspend();
-        // console.log('Media Stream Disconnect called');
       }
       if (meydaAnalyzer) {
         meydaAnalyzer.stop();
@@ -179,19 +177,12 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div>
-      <Button onMouseDown={startRecording}>Mic {JSON.stringify(isRecording)}</Button>
-      <br />
-      <span>RMS: {rmsArray[rmsArray.length - 1]}</span>
-      <br />
-      <span>Spectral Centroid: {spectralArray[spectralArray.length - 1]}</span>
-      <br />
-      <span>Perceptual Spread: {perceptualSpreadArray[perceptualSpreadArray.length - 1]}</span>
-      {/* <AnalyzeFile
-        // appOptions={appOptions}
-        setRms={setRms}
-        setSpectral={setSpectral}
-        calculateAnalyzer={calculateAnalyser} /> */}
+    <div className='container'>
+      <h1>Velvet</h1>
+      <IconButton
+        onClick={startRecording}>
+        {isRecording ? <MicIcon style={{ color: 'red' }} /> : <MicIcon style={{ color: 'lightgreen' }} />}
+      </IconButton>
 
       <div style={{ padding: '10px' }}>
         <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />

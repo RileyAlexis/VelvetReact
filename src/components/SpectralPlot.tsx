@@ -18,9 +18,9 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
         const height: number = window.innerHeight * .5;
 
         useEffect(() => {
-            // console.log(spectralArray.length);
-            // console.log(rmsArray.length);
-            // console.log(perceptualSpreadArray.length);
+            console.log(spectralArray.length);
+            console.log(rmsArray.length);
+            console.log(perceptualSpreadArray.length);
         }, [spectralArray])
 
         useEffect(() => {

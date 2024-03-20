@@ -1,31 +1,84 @@
-body {
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-}
+@layer base {
+    :root {
+        --green: #33f20d;
+        --whiteText: #fff;
+        --blackText: black;
 
-.legendContainer {
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
-    background: linear-gradient(to right, #2c8daa, #cb3487);
-    border: 1px solid black;
-}
+        --sans: "Open Sans", sans-serif;
 
-.legendItem {
-    display: flex;
-    flex-direction: row;
-    margin-top: 0.5rem;
-    margin-bottom: 0.2rem;
-    margin-left: 1rem;
-}
+        /* Font Scale */
+        --base-size: 1rem;
+        --scale: 1.25;
+        --h1: calc(var(--h2) * var(--scale));
+        /* 3.66rem */
+        --h2: calc(var(--h3) * var(--scale));
+        /* 2.93rem */
+        --h3: calc(var(--h4) * var(--scale));
+        /* 2.34rem */
+        --h4: calc(var(--h5) * var(--scale));
+        /* 1.875rem */
+        --h5: calc(var(--h6) * var(--scale));
+        /* 1.5rem */
+        --h6: var(--base-size);
+        /* 1.2rem */
+        --small: calc(var(--base-size) / var(--scale));
+        /* 0.96rem */
+        --radius: 5px;
+    }
 
-.legendSwatch {
-    margin: 0.2rem;
-    width: 1.1rem;
-    height: 1.1rem;
-}
+    html {
+        box-sizing: border-box;
+    }
 
-.legendText {
-    color: black;
-    font-size: large;
-    font-weight: 500;
-}
+    *,
+    *:before,
+    *:after {
+        box-sizing: inherit;
+    }
+
+    body {
+        font-family: var(--sans);
+        line-height: 1.5;
+        font-size: var(--base-size);
+        padding: 0;
+        margin: 0;
+        color: var(--blackText);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-weight: 400;
+        margin: 0;
+    }
+
+    .legendContainer {
+        display: flex;
+        flex-direction: row;
+        justify-content: left;
+        background: linear-gradient(to right, #2c8daa, #cb3487);
+        border: 1px solid black;
+    }
+
+    .legendItem {
+        display: flex;
+        flex-direction: row;
+        margin-top: 0.5rem;
+        margin-bottom: 0.2rem;
+        margin-left: 1rem;
+    }
+
+    .legendSwatch {
+        margin: 0.2rem;
+        width: 1.1rem;
+        height: 1.1rem;
+    }
+
+    .legendText {
+        color: black;
+        font-size: large;
+        font-weight: 500;
+    }
