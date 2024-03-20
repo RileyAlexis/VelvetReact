@@ -35,10 +35,12 @@ export const App: React.FC = () => {
     showSpectral: true,
     colorSpectral: '#fa9ef2',
     showRms: true,
-    colorRms: '#f2fa9e'
+    colorRms: '#f2fa9e',
+    dataLength: 1000,
   })
 
   const averageTicksRef = useRef(appOptions.averageTicks);
+  const dataLengthRef = useRef(appOptions.dataLength);
 
   let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
@@ -66,7 +68,7 @@ export const App: React.FC = () => {
       dataSum[i + 1] = dataSum[i] + data[i];
     }
 
-    return dataSum.slice(averageTicksRef.current).map((value, index) =>
+    return dataSum.slice(30).map((value, index) =>
       (value - dataSum[index]) / averageTicksRef.current);
   }, [appOptions]);
 
@@ -164,12 +166,13 @@ export const App: React.FC = () => {
           featureExtractors: ['rms', 'spectralCentroid', 'amplitudeSpectrum', 'perceptualSpread'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
             spectralSmall.push(features.spectralCentroid);
+            console.log(dataLengthRef.current);
             rmsSmall.push(features.rms * 500);
-            if (spectralSmall.length > 1000) {
-              spectralSmall = spectralSmall.slice(-1000);
+            if (spectralSmall.length >= dataLengthRef.current) {
+              spectralSmall = spectralSmall.slice(-dataLengthRef.current);
             }
-            if (rmsSmall.length > 1000) {
-              rmsSmall = rmsSmall.slice(-1000);
+            if (rmsSmall.length >= dataLengthRef.current) {
+              rmsSmall = rmsSmall.slice(-dataLengthRef.current);
             }
 
 
@@ -211,7 +214,8 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     averageTicksRef.current = appOptions.averageTicks;
-  }, [appOptions.averageTicks]);
+    dataLengthRef.current = appOptions.dataLength;
+  }, [appOptions.averageTicks, appOptions.dataLength]);
 
   useEffect(() => {
     // console.log('Spectral Array length', spectralArray[spectralArray.length - 1]);
@@ -228,7 +232,7 @@ export const App: React.FC = () => {
   const handleSetTicks = (ticks: number) => {
     setAppOptions(prevOptions => ({
       ...prevOptions,
-      averageTicks: ticks
+      dataLength: ticks
     }))
   }
 
@@ -250,8 +254,8 @@ export const App: React.FC = () => {
       <div style={{ padding: '10px' }}>
         <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />
         <label>Show Levels</label>
-        <input type='range' min={1} max={100} onChange={(e) => handleSetTicks(parseInt(e.target.value))} value={appOptions.averageTicks} />
-        <label>Average Ticks - {appOptions.averageTicks}</label>
+        <input type='range' min={200} max={10000} onChange={(e) => handleSetTicks(parseInt(e.target.value))} value={appOptions.dataLength} />
+        <label> Chart Zoom : {appOptions.dataLength}</label>
       </div>
 
 

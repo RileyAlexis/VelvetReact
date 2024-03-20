@@ -5,6 +5,7 @@ export interface AppOptions {
     colorSpectral: string,
     showRms: boolean,
     colorRms: string,
+    dataLength: number,
 }
 
 export interface AudioData {
