@@ -129,6 +129,17 @@
     .MuiBottomNavigation-root {
         justify-content: space-around;
     }
+
+    .dialogModal {
+        position: absolute;
+        width: 85%;
+        height: 50%;
+        background-color: var(--darkBackground);
+        color: var(--whiteText);
+        border: 2px solid white;
+
+    }
+
 }
 
 @media only screen and (max-width: 768px) and (orientation: portrait) {}

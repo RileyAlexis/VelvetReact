@@ -11,7 +11,7 @@ interface SpectralChartProps {
 
 
 export const SpectralPlot: React.FC<SpectralChartProps> =
-    ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray }) => {
+    ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray, powerSpectrumArray }) => {
 
         const plotRef = useRef<HTMLDivElement | null>(null);
         const width: number = window.innerWidth - 50;
@@ -25,7 +25,8 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
             // console.log(spectralArray.length);
             // console.log(rmsArray.length);
             // console.log(perceptualSpreadArray.length);
-        }, [spectralArray])
+            // console.log(powerSpectrumArray);
+        }, [powerSpectrumArray])
 
         useEffect(() => {
             if (spectralArray === undefined) return;
@@ -46,6 +47,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                 },
                 marks: [
                     Plot.frame(),
+
                     appOptions.showPerceptual ?
                         Plot.lineY(perceptualSpreadArray, {
                             curve: "natural",

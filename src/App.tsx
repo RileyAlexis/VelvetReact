@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import meyda from 'meyda';
+import { yin } from './yinIFFEE.js';
 
 //Material UI
-import { IconButton } from '@mui/material';
-import MicIcon from '@mui/icons-material/Mic';
 import { useMediaQuery } from "@mui/material";
 
 import './App.css'
@@ -28,6 +27,9 @@ export const App: React.FC = () => {
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
   const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
+  const [powerSpectrumArray, setPowerSpectrumArray] = useState<Float32Array | undefined>(undefined);
+  const [yinFrequency, setYinFrequency] = useState<number>(0);
+
 
   const isSmallScreen = useMediaQuery("(max-width: 600px)");
 
@@ -45,6 +47,7 @@ export const App: React.FC = () => {
 
   const averageTicksRef = useRef(appOptions.averageTicks);
   const dataLengthRef = useRef(appOptions.dataLength);
+  const yinFrequencyRef = useRef(yinFrequency);
 
   let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
@@ -90,29 +93,30 @@ export const App: React.FC = () => {
         const bandpass = audioContext.current.createBiquadFilter();
         bandpass.type = 'bandpass';
         bandpass.frequency.value = 3000;
-        bandpass.Q.value = 1;
+        bandpass.Q.value = 1; //troph of spectrum - 
 
         //Set low pass filter to reduce noise
         const lowpass = audioContext.current.createBiquadFilter();
         lowpass.type = 'lowpass';
-        lowpass.frequency.value = 2000; // Set the cutoff frequency
+        lowpass.frequency.value = 300; // Set the cutoff frequency
+        lowpass.Q.value = 1;
 
         const highpass = audioContext.current.createBiquadFilter();
         highpass.type = 'highpass';
-        highpass.frequency.value = 300;
+        highpass.frequency.value = 60;
+
 
         //Connect filters to audiocontext
-        source.connect(bandpass);
-        bandpass.connect(lowpass);
+        // source.connect(bandpass);
+        source.connect(lowpass);
         lowpass.connect(highpass);
-
         setMediaStream(source);
 
         const analyzer = meyda.createMeydaAnalyzer({
           audioContext: audioContext.current,
           source: highpass,
           bufferSize: 512,
-          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread'],
+          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'powerSpectrum', 'amplitudeSpectrum'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
 
             //First 5 values on spectralCentroid and perceptualSpread are NaN
@@ -136,6 +140,10 @@ export const App: React.FC = () => {
             setSpectralArray(movingWindowFilter(spectralSmall));
             setRmsArray(movingWindowFilter(rmsSmall));
             setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
+            setPowerSpectrumArray(features.powerSpectrum);
+
+            yinFrequencyRef.current = yin(features.amplitudeSpectrum, audioContext.current.sampleRate);
+
           }
 
         });
@@ -164,6 +172,7 @@ export const App: React.FC = () => {
   useEffect(() => {
     averageTicksRef.current = appOptions.averageTicks;
     dataLengthRef.current = appOptions.dataLength;
+
   }, [appOptions.averageTicks, appOptions.dataLength]);
 
   const handleShowRms = () => {
@@ -186,6 +195,7 @@ export const App: React.FC = () => {
         <h1>Velvet</h1>
         <h2>A Voice Resonance Analyzer</h2>
       </header>
+      <span style={{ color: 'white' }}>{yinFrequencyRef.current}</span>
       {/* <div style={{ padding: '10px' }}>
         <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />
         <label>Show Levels</label>
@@ -199,6 +209,7 @@ export const App: React.FC = () => {
           spectralArray={spectralArray}
           rmsArray={rmsArray}
           perceptualSpreadArray={perceptualSpreadArray}
+          powerSpectrumArray={powerSpectrumArray}
         />
       </div>
       <div className='bottomNav'>

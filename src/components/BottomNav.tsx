@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     BottomNavigation, BottomNavigationAction, Dialog,
-    DialogActions, DialogTitle, Divider, Modal, Slider, Switch
+    DialogActions, DialogContent, DialogTitle, Divider, Modal, Slider, Switch
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
 import { AppOptions } from '../interfaces';
@@ -19,6 +19,7 @@ export const BottomNav: React.FC<BottomNavProps> =
 
         const [menuOpen, setMenuOpen] = useState(false);
         const [aboutModalOpen, setAboutModalOpen] = useState(false);
+
 
         const handleMenuOpen = () => {
             setMenuOpen(true);
@@ -98,30 +99,7 @@ export const BottomNav: React.FC<BottomNavProps> =
                     />
                 </BottomNavigation>
 
-                <Dialog open={menuOpen} onClose={handleMenuClose}>
-                    <DialogTitle>Options</DialogTitle>
-                    <Divider />
-                    <DialogActions>
-                        <Switch size='large' checked={appOptions.showSpectral} onChange={toggleSpectral} />Show Spectral Centroid
-                        <Switch size='large' checked={appOptions.showRms} onChange={toggleRms} />Show RMS
-                        <Switch size='large' checked={appOptions.showPerceptual} onChange={togglePerceptual} />Show Perceptual Spread
-                    </DialogActions>
-                    <DialogActions>
-                        <Divider />
-                        <Slider
-                            value={appOptions.dataLength}
-                            onChange={setDataLength}
-                            min={100}
-                            max={5000}
-                            step={100}
-                            marks={[
-                                { value: 100, label: '100' },
-                                { value: 5000, label: '5000' },
-                            ]}
-                            aria-labelledby="range-slider"
-                        />
-                    </DialogActions>
-                </Dialog>
+
 
                 <Modal open={aboutModalOpen} onClose={handleAboutModalClose}>
                     <div className='aboutModalMobile' style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400 }}>
