@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as Plot from '@observablehq/plot';
 import { AppOptions } from '../interfaces';
 
@@ -15,7 +15,11 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
 
         const plotRef = useRef<HTMLDivElement | null>(null);
         const width: number = window.innerWidth - 50;
-        const height: number = window.innerHeight * .5;
+        const [height, setHeight] = useState<number>(window.innerHeight * 0.75);
+
+        useEffect(() => {
+            if (plotRef.current) setHeight(plotRef.current.clientHeight);
+        }, [plotRef.current])
 
         useEffect(() => {
             // console.log(spectralArray.length);
@@ -27,7 +31,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
             if (spectralArray === undefined) return;
 
             const plot = Plot.plot({
-                marginTop: 15,
+                marginTop: 5,
                 marginLeft: 30,
                 marginBottom: 20,
                 marginRight: 15,
@@ -71,7 +75,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
         }, [spectralArray]);
 
         return (
-            <div>
+            <div className='plotBox'>
                 <div className='legendContainer'>
                     <div className='legendItem'>
                         <div
@@ -93,11 +97,8 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                             className='legendText'>Perceptual Spread</div>
                     </div>
                 </div>
-                <div ref={plotRef}
-                // style={{
-                //     background: 'linear-gradient(to right, #2c8daa, #cb3487)',
-                //     color: 'white'}}
-                />
+
+                <div ref={plotRef} />
             </div>
         )
     }

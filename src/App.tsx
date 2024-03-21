@@ -182,20 +182,16 @@ export const App: React.FC = () => {
 
   return (
     <div className='container'>
-      <h1>Velvet</h1>
-      <h2>A Voice Resonance Analyzer</h2>
-      <IconButton
-        onClick={startRecording}>
-        {isRecording ? <MicIcon style={{ color: 'red' }} /> : <MicIcon style={{ color: 'lightgreen' }} />}
-      </IconButton>
-
+      <header>
+        <h1>Velvet</h1>
+        <h2>A Voice Resonance Analyzer</h2>
+      </header>
       {/* <div style={{ padding: '10px' }}>
         <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />
         <label>Show Levels</label>
         <input type='range' min={200} max={10000} onChange={(e) => handleSetTicks(parseInt(e.target.value))} value={appOptions.dataLength} />
         <label> Chart Zoom : {appOptions.dataLength}</label>
       </div> */}
-
 
       <div className='plotContainer'>
         <SpectralPlot
