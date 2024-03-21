@@ -3,15 +3,17 @@ import meyda from 'meyda';
 
 //Material UI
 import { IconButton } from '@mui/material';
-import { makeStyles } from '@mui/material';
 import MicIcon from '@mui/icons-material/Mic';
-import MicOffIcon from '@mui/icons-material/MicOff';
+import { useMediaQuery } from "@mui/material";
 
 import './App.css'
+
+//Types
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 
 //Components
 import { SpectralPlot } from './components/SpectralPlot';
+import { BottomNav } from './components/BottomNav';
 
 //Interfaces
 import { AppOptions } from './interfaces';
@@ -26,6 +28,8 @@ export const App: React.FC = () => {
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
   const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
+
+  const isSmallScreen = useMediaQuery("(max-width: 600px)");
 
   const [appOptions, setAppOptions] = useState<AppOptions>({
     averageTicks: 30,
@@ -179,20 +183,21 @@ export const App: React.FC = () => {
   return (
     <div className='container'>
       <h1>Velvet</h1>
+      <h2>A Voice Resonance Analyzer</h2>
       <IconButton
         onClick={startRecording}>
         {isRecording ? <MicIcon style={{ color: 'red' }} /> : <MicIcon style={{ color: 'lightgreen' }} />}
       </IconButton>
 
-      <div style={{ padding: '10px' }}>
+      {/* <div style={{ padding: '10px' }}>
         <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />
         <label>Show Levels</label>
         <input type='range' min={200} max={10000} onChange={(e) => handleSetTicks(parseInt(e.target.value))} value={appOptions.dataLength} />
         <label> Chart Zoom : {appOptions.dataLength}</label>
-      </div>
+      </div> */}
 
 
-      <div>
+      <div className='plotContainer'>
         <SpectralPlot
           appOptions={appOptions}
           spectralArray={spectralArray}
@@ -200,8 +205,15 @@ export const App: React.FC = () => {
           perceptualSpreadArray={perceptualSpreadArray}
         />
       </div>
+      <div className='bottomNav'>
+        <BottomNav
+          isRecording={isRecording}
+          startRecording={startRecording}
+          appOptions={appOptions}
+          setAppOptions={setAppOptions} />
+      </div>
 
 
-    </div>
+    </div >
   )
 }

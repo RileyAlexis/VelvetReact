@@ -18,9 +18,9 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
         const height: number = window.innerHeight * .5;
 
         useEffect(() => {
-            console.log(spectralArray.length);
-            console.log(rmsArray.length);
-            console.log(perceptualSpreadArray.length);
+            // console.log(spectralArray.length);
+            // console.log(rmsArray.length);
+            // console.log(perceptualSpreadArray.length);
         }, [spectralArray])
 
         useEffect(() => {
@@ -94,10 +94,10 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                     </div>
                 </div>
                 <div ref={plotRef}
-                    style={{
-                        background: 'linear-gradient(to right, #2c8daa, #cb3487)',
-                        color: 'white'
-                    }} />
+                // style={{
+                //     background: 'linear-gradient(to right, #2c8daa, #cb3487)',
+                //     color: 'white'}}
+                />
             </div>
         )
     }
