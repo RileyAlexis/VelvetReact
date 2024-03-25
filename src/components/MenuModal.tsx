@@ -38,6 +38,13 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
         }))
     }
 
+    const toggleYin = () => {
+        setAppOptions(prevOptions => ({
+            ...prevOptions,
+            showYin: !appOptions.showYin
+        }));
+    }
+
 
     return (
         <div className="optionsModal">
@@ -52,6 +59,9 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
             </div>
             <div>
                 <Switch checked={appOptions.showPerceptual} onChange={togglePerceptual} />Show Perceptual Spread
+            </div>
+            <div>
+                <Switch checked={appOptions.showYin} onChange={toggleYin} />Show Base Frequency
             </div>
             <div className="zoomSlider">
                 <Slider
