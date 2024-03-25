@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import {
-    BottomNavigation, BottomNavigationAction, Dialog,
-    DialogActions, DialogContent, DialogTitle, Divider, Modal, Slider, Switch
+    BottomNavigation, BottomNavigationAction,
+    Modal
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
 import { AppOptions } from '../interfaces';
 import { AboutText } from './AboutText';
+
+import { MenuModal } from './MenuModal';
 
 interface BottomNavProps {
     isRecording: boolean,
@@ -41,34 +43,7 @@ export const BottomNav: React.FC<BottomNavProps> =
             startRecording();
         };
 
-        const setDataLength = (event: Event, value: number) => {
-            event.preventDefault();
-            setAppOptions(prevOptions => ({
-                ...prevOptions,
-                dataLength: value,
-            }))
-        }
 
-        const toggleSpectral = () => {
-            setAppOptions(prevOptions => ({
-                ...prevOptions,
-                showSpectral: !appOptions.showSpectral
-            }))
-        }
-
-        const toggleRms = () => {
-            setAppOptions(prevOptions => ({
-                ...prevOptions,
-                showRms: !appOptions.showRms
-            }))
-        }
-
-        const togglePerceptual = () => {
-            setAppOptions(prevOptions => ({
-                ...prevOptions,
-                showPerceptual: !appOptions.showPerceptual
-            }))
-        }
 
         const buttonStyle = {
             color: 'white',
@@ -99,7 +74,9 @@ export const BottomNav: React.FC<BottomNavProps> =
                     />
                 </BottomNavigation>
 
-
+                <Modal open={menuOpen} onClose={handleMenuClose}>
+                    <MenuModal appOptions={appOptions} setAppOptions={setAppOptions} />
+                </Modal>
 
                 <Modal open={aboutModalOpen} onClose={handleAboutModalClose}>
                     <div className='aboutModalMobile' style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400 }}>

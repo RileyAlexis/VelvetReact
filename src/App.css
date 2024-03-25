@@ -24,6 +24,7 @@
         --h6: var(--base-size);
         /* 1.2rem */
         --small: calc(var(--base-size) / var(--scale));
+        --xSmall: calc(var(--small) / var(--scale));
         /* 0.96rem */
         --radius: 5px;
     }
@@ -96,26 +97,26 @@
     .legendContainer {
         display: flex;
         flex-direction: row;
-        justify-content: left;
     }
 
     .legendItem {
         display: flex;
         flex-direction: row;
-        margin-top: 0.5rem;
+        align-items: center;
+        margin-top: 0.3rem;
         margin-bottom: 0.2rem;
-        margin-left: 1rem;
+        margin-left: 0.2rem;
     }
 
     .legendSwatch {
-        margin: 0.2rem;
-        width: 1.1rem;
-        height: 1.1rem;
+        margin: 0.5rem;
+        width: 0.7rem;
+        height: 0.7rem;
     }
 
     .legendText {
         color: var(--blackText);
-        font-size: large;
+        font-size: var(--small);
         font-weight: 500;
     }
 
@@ -137,13 +138,37 @@
         background-color: var(--darkBackground);
         color: var(--whiteText);
         border: 2px solid white;
+    }
 
+    .optionsModal {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        position: relative;
+        width: 80vw;
+        top: 30%;
+        margin: 2rem;
+        padding: 2rem;
+        background-color: var(--darkBackground);
+        color: var(--whiteText);
+    }
+
+    .optionsModal h3 {
+        margin-bottom: 2rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--whiteText);
+    }
+
+    .zoomSlider {
+        padding-top: 2rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 
 }
 
 @media only screen and (max-width: 768px) and (orientation: portrait) {}
 
-@media only screen and (max-width: 1024px) and (orientation: landscape) {
+/* @media only screen and (max-width: 1024px) and (orientation: landscape) {
     .container {}
-}
+} */

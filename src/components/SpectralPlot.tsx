@@ -7,11 +7,13 @@ interface SpectralChartProps {
     spectralArray: number[],
     rmsArray: number[],
     perceptualSpreadArray: number[],
+    yinFrequencyArray: number[],
 }
 
 
 export const SpectralPlot: React.FC<SpectralChartProps> =
-    ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray, powerSpectrumArray }) => {
+    ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray,
+        yinFrequencyArray }) => {
 
         const plotRef = useRef<HTMLDivElement | null>(null);
         const width: number = window.innerWidth - 50;
@@ -26,7 +28,8 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
             // console.log(rmsArray.length);
             // console.log(perceptualSpreadArray.length);
             // console.log(powerSpectrumArray);
-        }, [powerSpectrumArray])
+            // console.log(yinFrequencyArray);
+        }, [yinFrequencyArray])
 
         useEffect(() => {
             if (spectralArray === undefined) return;
@@ -38,7 +41,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                 marginRight: 15,
                 y: {
                     grid: true,
-                    domain: [0, 100],
+                    domain: [0, 500],
                     // type: 'log',
                     // tickFormat: ((f) => (x) => f((x - 1) * 100))(d3.format("+d"))
                 },
@@ -47,6 +50,12 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                 },
                 marks: [
                     Plot.frame(),
+
+                    appOptions.showYin ?
+                        Plot.lineY(yinFrequencyArray, {
+                            curve: "catmull-rom-open",
+                            stroke: appOptions.colorYin,
+                        }) : null,
 
                     appOptions.showPerceptual ?
                         Plot.lineY(perceptualSpreadArray, {
@@ -89,7 +98,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                         <div
                             className='legendSwatch'
                             style={{ background: appOptions.colorRms }}></div>
-                        <div className='legendText'>Root Mean Square</div>
+                        <div className='legendText'>RMS</div>
                     </div>
                     <div className='legendItem'>
                         <div
@@ -97,6 +106,13 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                             style={{ background: appOptions.colorPerceptual }}></div>
                         <div
                             className='legendText'>Perceptual Spread</div>
+                    </div>
+                    <div className='legendItem'>
+                        <div
+                            className='legendSwatch'
+                            style={{ background: appOptions.colorYin }}></div>
+                        <div
+                            className='legendText'>Base Frequency</div>
                     </div>
                 </div>
 

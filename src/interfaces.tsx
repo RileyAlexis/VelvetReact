@@ -7,6 +7,8 @@ export interface AppOptions {
     colorRms: string,
     showPerceptual: boolean,
     colorPerceptual: string,
+    showYin: boolean,
+    colorYin: string,
     dataLength: number,
 }
 
