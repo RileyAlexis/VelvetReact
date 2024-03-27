@@ -27,8 +27,8 @@ export const App: React.FC = () => {
 
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [isPaused, setIsPaused] = useState<boolean>(true);
-  const [isEnded, setIsEnded] = useState<boolean>(false);
+  // const [isPaused, setIsPaused] = useState<boolean>(true);
+  // const [isEnded, setIsEnded] = useState<boolean>(false);
 
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
