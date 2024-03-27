@@ -71,6 +71,7 @@ export const BottomNav: React.FC<BottomNavProps> =
             <div>
                 <input
                     type="file"
+                    accept="audio/*"
                     ref={fileInputRef}
                     style={{ display: 'none' }}
                     onChange={handleFileChange}

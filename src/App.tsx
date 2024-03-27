@@ -27,6 +27,9 @@ export const App: React.FC = () => {
 
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(true);
+  const [isEnded, setIsEnded] = useState<boolean>(false);
+
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
   const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
@@ -65,9 +68,11 @@ export const App: React.FC = () => {
   const startRecording = () => {
     if (!audioContext.current) {
       audioContext.current = new AudioContext();
+      setIsRecording(true);
       startAnalyzer();
     }
     if (audioContext.current) {
+      setIsRecording(true);
       startAnalyzer();
     }
   }
@@ -110,19 +115,37 @@ export const App: React.FC = () => {
 
     audioContext.current?.resume();
 
-    if (!isRecording) {
+    if (isRecording) {
       try {
+        //Set up for microphone source
         let stream: MediaStream | null = null;
         let source: MediaStreamAudioSourceNode | null = null;
+        let fileSource: AudioBufferSourceNode | null = null;
 
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        source = audioContext.current?.createMediaStreamSource(stream);
+        if (isRecording) {
+          console.log('Mic Activate');
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          source = audioContext.current?.createMediaStreamSource(stream);
 
-        //Bandpass filter reduces non-voice frequencies
-        const bandpass = audioContext.current.createBiquadFilter();
-        bandpass.type = 'bandpass';
-        bandpass.frequency.value = 3000;
-        bandpass.Q.value = 1; //troph of spectrum - 
+          //Set up for audio file source
+        } else if (audioFile) {
+
+          const arrayBuffer = await audioFile?.arrayBuffer();
+          const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
+
+          fileSource = audioContext.current.createBufferSource();
+          fileSource.buffer = audioBuffer;
+
+          fileSource.addEventListener('ended', () => {
+            audioContext.current!.suspend();
+            console.log('Ended event triggered');
+            setIsPaused(true);
+            setIsEnded(true);
+            setAudioFile(null);
+            analyzer?.stop();
+          });
+
+        }
 
         //Set low pass filter to reduce noise
         const lowpass = audioContext.current.createBiquadFilter();
@@ -134,17 +157,25 @@ export const App: React.FC = () => {
         highpass.type = 'highpass';
         highpass.frequency.value = 60;
 
-
-        //Connect filters to audiocontext
-        // source.connect(bandpass);
-        source.connect(lowpass);
-        lowpass.connect(highpass);
-        setMediaStream(source);
-
         const fftAnalyzer = audioContext.current.createAnalyser();
         fftAnalyzer.fftSize = 2048;
         const bufferLength = fftAnalyzer.frequencyBinCount;
         const dataArray = new Float32Array(bufferLength);
+
+        //Connect filters to audiocontext
+
+        if (isRecording) {
+          source.connect(lowpass);
+          lowpass.connect(highpass);
+          highpass.connect(fftAnalyzer);
+          setMediaStream(source);
+        } else if (audioFile) {
+          fileSource.connect(lowpass);
+          lowpass.connect(highpass);
+          highpass.connect(fftAnalyzer);
+          fftAnalyzer.connect(audioContext.current.destination);
+        }
+
         highpass.connect(fftAnalyzer);
 
         // const formantAnalyzer = audioContext.current.createAnalyser();
