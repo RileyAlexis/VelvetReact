@@ -41,7 +41,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                 marginRight: 15,
                 y: {
                     grid: true,
-                    domain: [0, 500],
+                    domain: [80, 800],
                     // type: 'log',
                     // tickFormat: ((f) => (x) => f((x - 1) * 100))(d3.format("+d"))
                 },
@@ -65,7 +65,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
 
                     appOptions.showSpectral ?
                         Plot.lineY(spectralArray, {
-                            curve: "natural",
+                            curve: "catmull-rom-open",
                             stroke: appOptions.colorSpectral,
                         }) : null,
 

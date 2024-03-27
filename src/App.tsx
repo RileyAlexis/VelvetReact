@@ -38,9 +38,9 @@ export const App: React.FC = () => {
     plotHorizAxis: 100,
     showSpectral: true,
     colorSpectral: '#fa9ef2',
-    showRms: true,
+    showRms: false,
     colorRms: '#f2fa9e',
-    showPerceptual: true,
+    showPerceptual: false,
     colorPerceptual: '#fff',
     showYin: true,
     colorYin: '#7ee86d',
@@ -68,6 +68,11 @@ export const App: React.FC = () => {
     }
 
   }
+  //Sets the Meyda output of 0 to half the FFT Size against the hertz scale
+  const normalizeSpectralCentroid = (spectralCentroid: number, sampleRate: number, fftSize: number) => {
+    const frequency = spectralCentroid * (sampleRate / fftSize);
+    return frequency;
+  };
 
   const movingWindowFilter = useCallback((data: number[]) => {
     const dataSum = [0];
@@ -123,15 +128,19 @@ export const App: React.FC = () => {
         const analyzer = meyda.createMeydaAnalyzer({
           audioContext: audioContext.current,
           source: fftAnalyzer,
-          bufferSize: 512,
-          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'powerSpectrum', 'amplitudeSpectrum'],
+          bufferSize: 2048,
+          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'mfcc'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
 
             //First 5 values on spectralCentroid and perceptualSpread are NaN
             //If statement ensures the data shows on the graph immediately instead of
             //after 30 updates
             if (features.spectralCentroid) {
-              spectralSmall.push(features.spectralCentroid);
+              spectralSmall.push(
+                normalizeSpectralCentroid(
+                  features.spectralCentroid,
+                  audioContext.current.sampleRate,
+                  fftAnalyzer.fftSize));
             }
             rmsSmall.push(features.rms * 500);
             if (dataArray) {
@@ -151,13 +160,12 @@ export const App: React.FC = () => {
             if (yinFrequencySmall.length >= dataLengthRef.current) {
               yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
             }
-
+            console.log(features.mfcc);
             setSpectralArray(movingWindowFilter(spectralSmall));
             setRmsArray(movingWindowFilter(rmsSmall));
             setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
             // setPowerSpectrumArray(features.powerSpectrum);
             fftAnalyzer.getFloatTimeDomainData(dataArray);
-
             setYinFrequencyArray(movingWindowFilter(yinFrequencySmall))
 
           }
@@ -190,20 +198,6 @@ export const App: React.FC = () => {
     dataLengthRef.current = appOptions.dataLength;
 
   }, [appOptions.averageTicks, appOptions.dataLength]);
-
-  // const handleShowRms = () => {
-  //   setAppOptions(prevOptions => ({
-  //     ...prevOptions,
-  //     showRms: !appOptions.showRms
-  //   }))
-  // };
-
-  // const handleSetTicks = (ticks: number) => {
-  //   setAppOptions(prevOptions => ({
-  //     ...prevOptions,
-  //     dataLength: ticks
-  //   }))
-  // }
 
   return (
     <div className='container'>
