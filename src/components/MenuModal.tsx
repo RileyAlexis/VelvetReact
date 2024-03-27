@@ -45,12 +45,22 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
         }));
     }
 
+    const toggleFirstFormant = () => {
+        setAppOptions(prevOptions => ({
+            ...prevOptions,
+            showFirstFormant: !appOptions.showFirstFormant
+        }));
+    }
+
 
     return (
         <div className="optionsModal">
             <center>
                 <h3>Options:</h3>
             </center>
+            <div>
+                <Switch checked={appOptions.showFirstFormant} onChange={toggleFirstFormant} /><span>Show First Formant</span>
+            </div>
             <div>
                 <Switch checked={appOptions.showSpectral} onChange={toggleSpectral} /><span>Show Spectral Centroid</span>
             </div>

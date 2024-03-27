@@ -8,12 +8,13 @@ interface SpectralChartProps {
     rmsArray: number[],
     perceptualSpreadArray: number[],
     yinFrequencyArray: number[],
+    formantFrequencyArray: number[]
 }
 
 
 export const SpectralPlot: React.FC<SpectralChartProps> =
     ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray,
-        yinFrequencyArray }) => {
+        yinFrequencyArray, formantFrequencyArray }) => {
 
         const plotRef = useRef<HTMLDivElement | null>(null);
         const width: number = window.innerWidth - 50;
@@ -55,6 +56,12 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                         Plot.lineY(yinFrequencyArray, {
                             curve: "natural",
                             stroke: appOptions.colorYin,
+                        }) : null,
+
+                    appOptions.showFirstFormant ?
+                        Plot.lineY(formantFrequencyArray, {
+                            curve: "natural",
+                            stroke: appOptions.colorFirstFormant,
                         }) : null,
 
                     appOptions.showPerceptual ?
