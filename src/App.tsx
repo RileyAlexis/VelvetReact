@@ -143,8 +143,9 @@ export const App: React.FC = () => {
                   fftAnalyzer.fftSize));
             }
             rmsSmall.push(features.rms * 500);
-            if (dataArray) {
-              yinFrequencySmall.push(yin(dataArray, audioContext.current.sampleRate, 0.05));
+            const yinValue = yin(dataArray, audioContext.current.sampleRate, 0.05);
+            if (yinValue) {
+              yinFrequencySmall.push(yinValue);
             }
             if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
 
@@ -160,14 +161,13 @@ export const App: React.FC = () => {
             if (yinFrequencySmall.length >= dataLengthRef.current) {
               yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
             }
-            console.log(features.mfcc);
+
             setSpectralArray(movingWindowFilter(spectralSmall));
             setRmsArray(movingWindowFilter(rmsSmall));
             setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
             // setPowerSpectrumArray(features.powerSpectrum);
             fftAnalyzer.getFloatTimeDomainData(dataArray);
             setYinFrequencyArray(movingWindowFilter(yinFrequencySmall))
-
           }
 
         });
