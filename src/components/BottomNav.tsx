@@ -1,26 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+
 import {
     BottomNavigation, BottomNavigationAction,
     Modal
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
-import { AppOptions } from '../interfaces';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { AboutText } from './AboutText';
-
 import { MenuModal } from './MenuModal';
+
+//Types
+import { AppOptions } from '../interfaces';
 
 interface BottomNavProps {
     isRecording: boolean,
     startRecording: Function,
     appOptions: AppOptions,
     setAppOptions: Function,
+    audioFile: File,
+    setAudioFile: Function,
 }
 
 export const BottomNav: React.FC<BottomNavProps> =
-    ({ isRecording, startRecording, appOptions, setAppOptions }) => {
+    ({ isRecording, startRecording, appOptions, setAppOptions, audioFile, setAudioFile }) => {
 
         const [menuOpen, setMenuOpen] = useState(false);
         const [aboutModalOpen, setAboutModalOpen] = useState(false);
+        const fileInputRef = useRef(null);
 
 
         const handleMenuOpen = () => {
@@ -43,6 +49,18 @@ export const BottomNav: React.FC<BottomNavProps> =
             startRecording();
         };
 
+        const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                console.log('File Uploaded');
+                setAudioFile(file);
+                // startRecording();
+            }
+        }
+
+        const handleUploadClick = () => {
+            fileInputRef.current.click();
+        };
 
 
         const buttonStyle = {
@@ -51,6 +69,12 @@ export const BottomNav: React.FC<BottomNavProps> =
 
         return (
             <div>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                />
                 <BottomNavigation showLabels
                     style={{ background: 'transparent' }}
                 >
@@ -65,6 +89,13 @@ export const BottomNav: React.FC<BottomNavProps> =
                         label="Mic"
                         icon={isRecording ? <MicOff style={{ color: 'red' }} /> : <Mic style={{ color: 'green' }} />}
                         onClick={handleMicToggle}
+                    />
+
+                    <BottomNavigationAction
+                        style={buttonStyle}
+                        label="File"
+                        icon={audioFile ? <FileUploadIcon style={{ color: 'red' }} /> : <FileUploadIcon style={{ color: 'green' }} />}
+                        onClick={handleUploadClick}
                     />
                     <BottomNavigationAction
                         style={buttonStyle}

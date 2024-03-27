@@ -9,6 +9,8 @@ export interface AppOptions {
     colorPerceptual: string,
     showYin: boolean,
     colorYin: string,
+    showFirstFormant: boolean,
+    colorFirstFormant: string,
     dataLength: number,
 }
 

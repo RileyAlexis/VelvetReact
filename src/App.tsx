@@ -19,17 +19,19 @@ import { AppOptions } from './interfaces';
 
 
 export const App: React.FC = () => {
-  const [isRecording, setIsRecording] = useState<boolean>(false);
   const audioContext = useRef<AudioContext | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | null>(null);
   const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
+  const [audioFile, setAudioFile] = useState<File>(null);
+
+
+  const [isRecording, setIsRecording] = useState<boolean>(false);
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
   const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
-  // const [powerSpectrumArray, setPowerSpectrumArray] = useState<Float32Array | undefined>(undefined);
+  const [formantFrequencyArray, setFormantFrequencyArray] = useState<number[]>([]);
   const [yinFrequencyArray, setYinFrequencyArray] = useState<number[]>([]);
-
 
   // const isSmallScreen = useMediaQuery("(max-width: 600px)");
 
@@ -44,8 +46,10 @@ export const App: React.FC = () => {
     colorPerceptual: '#fff',
     showYin: true,
     colorYin: '#7ee86d',
-    dataLength: 1000,
-  })
+    showFirstFormant: true,
+    colorFirstFormant: '#520477',
+    dataLength: 500,
+  });
 
   const averageTicksRef = useRef(appOptions.averageTicks);
   const dataLengthRef = useRef(appOptions.dataLength);
@@ -54,7 +58,7 @@ export const App: React.FC = () => {
   let spectralSmall: number[] = [];
   let perceptualSpreadSmall: number[] = [];
   let yinFrequencySmall: number[] = [];
-  // let amplitudeSpectrum: Float32Array[] = [];
+  let formantFrequencySmall: number[] = [];
 
   // const amplitudeSpectrumRef = useRef(amplitudeSpectrum);
 
@@ -66,13 +70,30 @@ export const App: React.FC = () => {
     if (audioContext.current) {
       startAnalyzer();
     }
-
   }
+
   //Sets the Meyda output of 0 to half the FFT Size against the hertz scale
-  const normalizeSpectralCentroid = (spectralCentroid: number, sampleRate: number, fftSize: number) => {
-    const frequency = spectralCentroid * (sampleRate / fftSize);
-    return frequency;
-  };
+  const normalizeSpectralCentroid =
+    (spectralCentroid: number, sampleRate: number, fftSize: number) => {
+      const frequency = spectralCentroid * (sampleRate / fftSize);
+      return frequency;
+    };
+
+  const calculateFirstFormantFrequency = (dataArray: Float32Array) => {
+    let peakIndex = 0;
+    let peakValue = -Infinity;
+    for (let i = 0; i < dataArray.length; i++) {
+      if (dataArray[i] > peakValue) {
+        peakValue = dataArray[i];
+        peakIndex = i;
+      }
+
+      // console.log("First formant frequency:", firstFormantFrequency.toFixed(2), "Hz");
+    }
+    const firstFormantFrequency = (peakIndex * audioContext.current.sampleRate) / dataArray.length;
+    return firstFormantFrequency;
+  }
+
 
   const movingWindowFilter = useCallback((data: number[]) => {
     const dataSum = [0];
@@ -83,6 +104,7 @@ export const App: React.FC = () => {
     return dataSum.slice(30).map((value, index) =>
       (value - dataSum[index]) / averageTicksRef.current);
   }, [appOptions]);
+
 
   const startAnalyzer = async () => {
 
@@ -125,11 +147,17 @@ export const App: React.FC = () => {
         const dataArray = new Float32Array(bufferLength);
         highpass.connect(fftAnalyzer);
 
+        // const formantAnalyzer = audioContext.current.createAnalyser();
+        // formantAnalyzer.fftSize = 2048;
+        // const formantBufferLength = formantAnalyzer.frequencyBinCount;
+        // const formantArray = new Float32Array(formantBufferLength);
+        // highpass.connect(formantAnalyzer);
+
         const analyzer = meyda.createMeydaAnalyzer({
           audioContext: audioContext.current,
           source: fftAnalyzer,
           bufferSize: 2048,
-          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'mfcc'],
+          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'amplitudeSpectrum'],
           callback: (features: Meyda.MeydaFeaturesObject) => {
 
             //First 5 values on spectralCentroid and perceptualSpread are NaN
@@ -144,9 +172,12 @@ export const App: React.FC = () => {
             }
             rmsSmall.push(features.rms * 500);
             const yinValue = yin(dataArray, audioContext.current.sampleRate, 0.05);
+
             if (yinValue) {
               yinFrequencySmall.push(yinValue);
             }
+            formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum));
+
             if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
 
             if (spectralSmall.length >= dataLengthRef.current) {
@@ -158,6 +189,10 @@ export const App: React.FC = () => {
             if (perceptualSpreadSmall.length >= dataLengthRef.current) {
               perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
             }
+            if (formantFrequencySmall.length >= dataLengthRef.current) {
+              formantFrequencySmall = formantFrequencySmall.slice(-dataLengthRef.current);
+            }
+
             if (yinFrequencySmall.length >= dataLengthRef.current) {
               yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
             }
@@ -167,6 +202,9 @@ export const App: React.FC = () => {
             setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
             // setPowerSpectrumArray(features.powerSpectrum);
             fftAnalyzer.getFloatTimeDomainData(dataArray);
+            // formantAnalyzer.getFloatFrequencyData(formantArray);
+
+            setFormantFrequencyArray(movingWindowFilter(formantFrequencySmall));
             setYinFrequencyArray(movingWindowFilter(yinFrequencySmall))
           }
 
@@ -205,13 +243,6 @@ export const App: React.FC = () => {
         <h1>Velvet</h1>
         <h2>A Voice Resonance Analyzer</h2>
       </header>
-      {/* <div style={{ padding: '10px' }}>
-        <input type='checkbox' onChange={handleShowRms} checked={appOptions.showRms} />
-        <label>Show Levels</label>
-        <input type='range' min={200} max={10000} onChange={(e) => handleSetTicks(parseInt(e.target.value))} value={appOptions.dataLength} />
-        <label> Chart Zoom : {appOptions.dataLength}</label>
-      </div> */}
-
       <div className='plotContainer'>
         <SpectralPlot
           appOptions={appOptions}
@@ -219,6 +250,7 @@ export const App: React.FC = () => {
           rmsArray={rmsArray}
           perceptualSpreadArray={perceptualSpreadArray}
           yinFrequencyArray={yinFrequencyArray}
+          formantFrequencyArray={formantFrequencyArray}
         />
       </div>
       <div className='bottomNav'>
@@ -226,7 +258,10 @@ export const App: React.FC = () => {
           isRecording={isRecording}
           startRecording={startRecording}
           appOptions={appOptions}
-          setAppOptions={setAppOptions} />
+          setAppOptions={setAppOptions}
+          audioFile={audioFile}
+          setAudioFile={setAudioFile}
+        />
       </div>
 
 
