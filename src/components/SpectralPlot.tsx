@@ -98,6 +98,19 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                     <div className='legendItem'>
                         <div
                             className='legendSwatch'
+                            style={{ background: appOptions.colorFirstFormant }}></div>
+                        <div className='legendText'>Formant Frequency</div>
+                    </div>
+                    <div className='legendItem'>
+                        <div
+                            className='legendSwatch'
+                            style={{ background: appOptions.colorYin }}></div>
+                        <div
+                            className='legendText'>Base Frequency</div>
+                    </div>
+                    <div className='legendItem'>
+                        <div
+                            className='legendSwatch'
                             style={{ background: appOptions.colorSpectral }}></div>
                         <div className='legendText'>Spectral Centroid</div>
                     </div>
@@ -114,13 +127,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                         <div
                             className='legendText'>Perceptual Spread</div>
                     </div>
-                    <div className='legendItem'>
-                        <div
-                            className='legendSwatch'
-                            style={{ background: appOptions.colorYin }}></div>
-                        <div
-                            className='legendText'>Base Frequency</div>
-                    </div>
+
                 </div>
 
                 <div ref={plotRef} />
