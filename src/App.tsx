@@ -99,7 +99,6 @@ export const App: React.FC = () => {
     return firstFormantFrequency;
   }
 
-
   const movingWindowFilter = useCallback((data: number[]) => {
     const dataSum = [0];
     for (let i = 0; i < data.length; i++) {
