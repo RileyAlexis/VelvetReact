@@ -15,7 +15,12 @@ export const AboutText: React.FC = () => {
 
             <h3>Frequencies</h3>
             <p>
-                Velvet isolates the [Fundamental Frequency](https://en.wikipedia.org/wiki/Fundamental_frequency) and the [First Formant Frequency](https://en.wikipedia.org/wiki/Formant) from an audio stream. This information should give an accurate estimate of the range
+                Velvet isolates the
+                <a target="_blank" href="https://en.wikipedia.org/wiki/Fundamental_frequency">Fundamental Frequency</a>
+                and the
+                <a target="_blank" href="https://en.wikipedia.org/wiki/Formant">First Formant Frequency</a>
+                from an audio
+                stream. This information should give an accurate estimate of the range
                 of frequencies in a human voice.
             </p>
         </div>
