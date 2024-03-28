@@ -41,7 +41,7 @@ export const App: React.FC = () => {
   const [appOptions, setAppOptions] = useState<AppOptions>({
     averageTicks: 30,
     plotHorizAxis: 100,
-    showSpectral: true,
+    showSpectral: false,
     colorSpectral: '#fa9ef2',
     showRms: false,
     colorRms: '#f2fa9e',

@@ -95,38 +95,48 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
         return (
             <div className='plotBox'>
                 <div className='legendContainer'>
-                    <div className='legendItem'>
-                        <div
-                            className='legendSwatch'
-                            style={{ background: appOptions.colorFirstFormant }}></div>
-                        <div className='legendText'>Formant Frequency</div>
-                    </div>
-                    <div className='legendItem'>
-                        <div
-                            className='legendSwatch'
-                            style={{ background: appOptions.colorYin }}></div>
-                        <div
-                            className='legendText'>Base Frequency</div>
-                    </div>
-                    <div className='legendItem'>
-                        <div
-                            className='legendSwatch'
-                            style={{ background: appOptions.colorSpectral }}></div>
-                        <div className='legendText'>Spectral Centroid</div>
-                    </div>
-                    <div className='legendItem'>
-                        <div
-                            className='legendSwatch'
-                            style={{ background: appOptions.colorRms }}></div>
-                        <div className='legendText'>RMS</div>
-                    </div>
-                    <div className='legendItem'>
-                        <div
-                            className='legendSwatch'
-                            style={{ background: appOptions.colorPerceptual }}></div>
-                        <div
-                            className='legendText'>Perceptual Spread</div>
-                    </div>
+                    {appOptions.showFirstFormant &&
+                        <div className='legendItem'>
+                            <div
+                                className='legendSwatch'
+                                style={{ background: appOptions.colorFirstFormant }}></div>
+                            <div className='legendText'>Formant Frequency</div>
+                        </div>
+                    }
+                    {appOptions.showYin &&
+                        <div className='legendItem'>
+                            <div
+                                className='legendSwatch'
+                                style={{ background: appOptions.colorYin }}></div>
+                            <div
+                                className='legendText'>Base Frequency</div>
+                        </div>
+                    }
+                    {appOptions.showSpectral &&
+                        <div className='legendItem'>
+                            <div
+                                className='legendSwatch'
+                                style={{ background: appOptions.colorSpectral }}></div>
+                            <div className='legendText'>Spectral Centroid</div>
+                        </div>
+                    }
+                    {appOptions.showRms &&
+                        <div className='legendItem'>
+                            <div
+                                className='legendSwatch'
+                                style={{ background: appOptions.colorRms }}></div>
+                            <div className='legendText'>RMS</div>
+                        </div>
+                    }
+                    {appOptions.showPerceptual &&
+                        <div className='legendItem'>
+                            <div
+                                className='legendSwatch'
+                                style={{ background: appOptions.colorPerceptual }}></div>
+                            <div
+                                className='legendText'>Perceptual Spread</div>
+                        </div>
+                    }
 
                 </div>
 
