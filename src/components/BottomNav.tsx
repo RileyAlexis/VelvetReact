@@ -5,7 +5,7 @@ import {
     Modal
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
+// import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { AboutText } from './AboutText';
 import { MenuModal } from './MenuModal';
 
@@ -27,7 +27,7 @@ export const BottomNav: React.FC<BottomNavProps> =
         const [menuOpen, setMenuOpen] = useState(false);
         const [aboutModalOpen, setAboutModalOpen] = useState(false);
         const fileInputRef = useRef(null);
-
+        console.log(typeof audioFile);
 
         const handleMenuOpen = () => {
             setMenuOpen(true);
@@ -58,9 +58,9 @@ export const BottomNav: React.FC<BottomNavProps> =
             }
         }
 
-        const handleUploadClick = () => {
-            fileInputRef.current.click();
-        };
+        // const handleUploadClick = () => {
+        //     fileInputRef.current.click();
+        // };
 
 
         const buttonStyle = {
@@ -92,12 +92,12 @@ export const BottomNav: React.FC<BottomNavProps> =
                         onClick={handleMicToggle}
                     />
 
-                    <BottomNavigationAction
+                    {/* <BottomNavigationAction
                         style={buttonStyle}
                         label="File"
                         icon={audioFile ? <FileUploadIcon style={{ color: 'red' }} /> : <FileUploadIcon style={{ color: 'green' }} />}
                         onClick={handleUploadClick}
-                    />
+                    /> */}
                     <BottomNavigationAction
                         style={buttonStyle}
                         label="About"
