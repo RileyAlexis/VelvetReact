@@ -23,11 +23,13 @@ export const App: React.FC = () => {
   const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | AudioBufferSourceNode | null>(null);
   const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
-  // const [audioFile, setAudioFile] = useState<File>(null);
-
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [micOn, setMicOn] = useState<boolean>(false);
+  const [isMicOn, setIsMicOn] = useState<boolean>(false);
+  const [isFilePlaying, setIsFilePlaying] = useState<boolean>(false);
+
+
+
   const [isPaused, setIsPaused] = useState<boolean>(true);
   const [isEnded, setIsEnded] = useState<boolean>(false);
 
@@ -75,29 +77,28 @@ export const App: React.FC = () => {
       audioContext.current = new AudioContext();
       setIsRecording(true);
       micOnRef.current = true;
-      setMicOn(true);
+      setIsMicOn(true);
       startAnalyzer(null);
     }
     if (audioContext.current) {
       setIsRecording(true);
       micOnRef.current = true;
-      setMicOn(true);
+      setIsMicOn(true);
       startAnalyzer(null);
     }
   }
 
-  const startFileAnalyzing = (file?: File) => {
-    console.log(audioContext.current);
+  const startFileAnalyzing = (file: File) => {
     if (!audioContext.current) {
       audioContext.current = new AudioContext();
       setIsRecording(true);
       fileOnRef.current = true;
-      if (file) audioFileRef.current = file;
+      audioFileRef.current = file;
       startAnalyzer(file);
 
       if (audioContext.current) {
         setIsRecording(true);
-        if (file) fileOnRef.current = true;
+        fileOnRef.current = true;
         audioFileRef.current = file;
         startAnalyzer(file);
       }
@@ -172,16 +173,15 @@ export const App: React.FC = () => {
           source.connect(audioContext.current.destination);
           source?.start();
 
-          source.addEventListener('ended', () => {
-            audioContext.current!.suspend();
-            audioContext.current.close();
-            audioContext.current = null;
+          source.addEventListener('ended', async () => {
+            await audioContext.current!.suspend();
+            // await audioContext.current.close();
             console.log('Ended event triggered');
             setIsRecording(false);
-            setIsPaused(true);
             setIsEnded(true);
             fileOnRef.current = false;
-            analyzer?.stop();
+            // analyzer?.stop();
+            audioContext.current = null;
           });
         }
 
@@ -280,8 +280,8 @@ export const App: React.FC = () => {
       }
     } else {
       console.log('Stop recording called');
-      if (mediaStream) {
-        // mediaStream.disconnect();
+      if (audioContext.current) {
+        mediaStream.disconnect();
         audioContext.current?.suspend();
       }
 
@@ -291,7 +291,7 @@ export const App: React.FC = () => {
       }
       setIsRecording(false);
       micOnRef.current = false;
-      setMicOn(false);
+      setIsMicOn(false);
     }
   };
 
@@ -299,18 +299,15 @@ export const App: React.FC = () => {
 
     audioContext.current?.suspend();
     // meydaAnalyzer?.stop(); //Stopping analyzer on suspend results in multiple analyzers running
-    setIsRecording(false);
-    setIsPaused(true);
+    setIsFilePlaying(false);
 
-    setIsRecording(false);
   }
 
   const handleResume = () => {
     if (audioFileRef.current) {
       audioContext.current?.resume();
       // meydaAnalyzer?.start(); //Stopping analyzer on suspend results in multiple analyzers running
-      setIsRecording(true);
-      setIsPaused(false);
+      setIsFilePlaying(true);
     } else {
       console.error('Please select a file to analyze');
     }
@@ -346,10 +343,11 @@ export const App: React.FC = () => {
           appOptions={appOptions}
           setAppOptions={setAppOptions}
           fileOnRef={fileOnRef.current}
-          micOn={micOn}
+          isMicOn={isMicOn}
           handlePause={handlePause}
           handleResume={handleResume}
           isEnded={isEnded}
+          setIsEnded={setIsEnded}
         />
       </div>
 
