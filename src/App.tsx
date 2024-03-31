@@ -86,22 +86,30 @@ export const App: React.FC = () => {
     }
   }
 
-  const startFileAnalyzing = (file: File) => {
-    console.log('File Analyzer function called');
+  const startFileAnalyzing = (file?: File) => {
+    console.log(audioContext.current);
     if (!audioContext.current) {
       audioContext.current = new AudioContext();
       setIsRecording(true);
       fileOnRef.current = true;
-      audioFileRef.current = file;
+      if (file) audioFileRef.current = file;
       startAnalyzer(file);
 
       if (audioContext.current) {
         setIsRecording(true);
-        fileOnRef.current = true;
+        if (file) fileOnRef.current = true;
         audioFileRef.current = file;
         startAnalyzer(file);
       }
     }
+
+    //Allows replay of the same file
+    if (audioContext.current.state === 'suspended') {
+      setIsRecording(true);
+      fileOnRef.current = true;
+      startAnalyzer(audioFileRef.current);
+    }
+
   }
 
   //Sets the Meyda output of 0 to half the FFT Size against the hertz scale
@@ -151,6 +159,7 @@ export const App: React.FC = () => {
           source = audioContext.current?.createMediaStreamSource(stream);
         }
         if (audioFile) {
+          console.log(audioFile);
           const arrayBuffer = await audioFile.arrayBuffer();
           const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
 
@@ -165,6 +174,8 @@ export const App: React.FC = () => {
 
           source.addEventListener('ended', () => {
             audioContext.current!.suspend();
+            audioContext.current.close();
+            audioContext.current = null;
             console.log('Ended event triggered');
             setIsRecording(false);
             setIsPaused(true);
@@ -302,11 +313,8 @@ export const App: React.FC = () => {
       setIsPaused(false);
     } else {
       console.error('Please select a file to analyze');
-
     }
   }
-
-
 
   useEffect(() => {
     averageTicksRef.current = appOptions.averageTicks;
@@ -341,6 +349,7 @@ export const App: React.FC = () => {
           micOn={micOn}
           handlePause={handlePause}
           handleResume={handleResume}
+          isEnded={isEnded}
         />
       </div>
 

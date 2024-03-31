@@ -24,7 +24,8 @@ interface BottomNavProps {
     micOn: boolean,
     fileOnRef: boolean,
     handlePause: Function,
-    handleResume: Function
+    handleResume: Function,
+    isEnded: boolean,
 }
 
 export const BottomNav: React.FC<BottomNavProps> =
@@ -36,14 +37,17 @@ export const BottomNav: React.FC<BottomNavProps> =
         micOn,
         fileOnRef,
         handlePause,
-        handleResume
+        handleResume,
+        isEnded
     }) => {
 
         const [menuOpen, setMenuOpen] = useState(false);
         const [aboutModalOpen, setAboutModalOpen] = useState(false);
         const [isPlaying, setIsPlaying] = useState(false);
-        const [fileUploaded, setFileUploaded] = useState(false);
+        const [showPlayPause, setShowPlayPause] = useState<boolean>(false);
         const fileInputRef = useRef(null);
+
+        const fileForReplayRef = useRef(null);
 
         const handleMenuOpen = () => {
             setMenuOpen(true);
@@ -62,6 +66,7 @@ export const BottomNav: React.FC<BottomNavProps> =
         };
 
         const handleMicToggle = () => {
+            setShowPlayPause(false);
             startRecording();
         };
 
@@ -69,6 +74,8 @@ export const BottomNav: React.FC<BottomNavProps> =
             const file = e.target.files?.[0];
             if (file) {
                 console.log('File Uploaded');
+                fileForReplayRef.current = file;
+                setShowPlayPause(true);
                 startFileAnalyzing(file);
             }
         }
@@ -82,10 +89,26 @@ export const BottomNav: React.FC<BottomNavProps> =
         }
 
         const togglePlayPause = () => {
-            setIsPlaying(!isPlaying);
-            !isPlaying ? handlePause() : handleResume();
+            setIsPlaying(true);
+
+            if (!isPlaying && !isEnded) {
+                handlePause();
+            } else if (isPlaying && !isEnded) {
+                handleResume();
+            } else {
+                console.log('Replay triggered', fileForReplayRef.current);
+                startFileAnalyzing(fileForReplayRef.current);
+            }
+            // !isPlaying ? handlePause() : handleResume();
         }
 
+        useEffect(() => {
+            if (isEnded) setIsPlaying(false);
+        }, [isEnded]);
+
+        useEffect(() => {
+            console.log('isPlaying', isPlaying);
+        }, [isPlaying]);
 
         return (
             <div>
@@ -118,14 +141,15 @@ export const BottomNav: React.FC<BottomNavProps> =
                         icon={fileOnRef ? <FileUploadIcon style={{ color: 'red' }} /> : <FileUploadIcon style={{ color: 'green' }} />}
                         onClick={handleUploadClick}
                     />
-                    {fileOnRef &&
+                    {showPlayPause &&
                         <BottomNavigationAction
                             style={buttonStyle}
-                            label={isPlaying ? 'Resume' : 'Pause'}
+                            label={isPlaying ? 'Play' : 'Pause'}
                             icon={isPlaying ? <PlayCircleOutlineIcon /> : <PauseIcon />}
                             onClick={togglePlayPause}
                         />
                     }
+
                     <BottomNavigationAction
                         style={buttonStyle}
                         label="About"
