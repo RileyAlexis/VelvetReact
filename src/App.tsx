@@ -92,13 +92,15 @@ export const App: React.FC = () => {
     if (!audioContext.current) {
       audioContext.current = new AudioContext();
       setIsRecording(true);
-      fileOnRef.current = true;
+      setIsFilePlaying(true);
+      // fileOnRef.current = true;
       audioFileRef.current = file;
       startAnalyzer(file);
 
       if (audioContext.current) {
         setIsRecording(true);
-        fileOnRef.current = true;
+        setIsFilePlaying(true);
+        // fileOnRef.current = true;
         audioFileRef.current = file;
         startAnalyzer(file);
       }
@@ -107,7 +109,7 @@ export const App: React.FC = () => {
     //Allows replay of the same file
     if (audioContext.current.state === 'suspended') {
       setIsRecording(true);
-      fileOnRef.current = true;
+      // fileOnRef.current = true;
       startAnalyzer(audioFileRef.current);
     }
 
@@ -179,8 +181,8 @@ export const App: React.FC = () => {
             console.log('Ended event triggered');
             setIsRecording(false);
             setIsEnded(true);
-            fileOnRef.current = false;
-            // analyzer?.stop();
+            setIsFilePlaying(false);
+            analyzer?.stop();
             audioContext.current = null;
           });
         }
@@ -342,12 +344,13 @@ export const App: React.FC = () => {
           startFileAnalyzing={startFileAnalyzing}
           appOptions={appOptions}
           setAppOptions={setAppOptions}
-          fileOnRef={fileOnRef.current}
+          // fileOnRef={fileOnRef.current}
           isMicOn={isMicOn}
           handlePause={handlePause}
           handleResume={handleResume}
           isEnded={isEnded}
           setIsEnded={setIsEnded}
+          isFilePlaying={isFilePlaying}
         />
       </div>
 

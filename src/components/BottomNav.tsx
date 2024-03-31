@@ -22,25 +22,27 @@ interface BottomNavProps {
     appOptions: AppOptions,
     setAppOptions: Function,
     isMicOn: boolean,
-    fileOnRef: boolean,
+    // fileOnRef: boolean,
     handlePause: Function,
     handleResume: Function,
     isEnded: boolean,
     setIsEnded: Function,
+    isFilePlaying: boolean,
 }
 
 export const BottomNav: React.FC<BottomNavProps> =
-    ({ isRecording,
+    ({
         startRecording,
         startFileAnalyzing,
         appOptions,
         setAppOptions,
         isMicOn,
-        fileOnRef,
+        // fileOnRef,
         handlePause,
         handleResume,
         isEnded,
         setIsEnded,
+        isFilePlaying,
     }) => {
 
         const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -137,14 +139,14 @@ export const BottomNav: React.FC<BottomNavProps> =
                     <BottomNavigationAction
                         style={buttonStyle}
                         label="File"
-                        icon={fileOnRef ? <FileUploadIcon style={{ color: 'red' }} /> : <FileUploadIcon style={{ color: 'green' }} />}
+                        icon={isFilePlaying ? <FileUploadIcon style={{ color: 'red' }} /> : <FileUploadIcon style={{ color: 'green' }} />}
                         onClick={handleUploadClick}
                     />
                     {showPlayPause &&
                         <BottomNavigationAction
                             style={buttonStyle}
-                            label={isPlaying ? 'Play' : 'Pause'}
-                            icon={!isPlaying ? <PlayCircleOutlineIcon /> : <PauseIcon />}
+                            label={!isFilePlaying ? 'Play' : 'Pause'}
+                            icon={!isFilePlaying ? <PlayCircleOutlineIcon /> : <PauseIcon />}
                             onClick={togglePlayPause}
                         />
                     }
