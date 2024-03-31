@@ -6,6 +6,8 @@ import {
     Modal
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import PauseIcon from '@mui/icons-material/Pause';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { AboutText } from './AboutText';
 import { MenuModal } from './MenuModal';
@@ -39,6 +41,8 @@ export const BottomNav: React.FC<BottomNavProps> =
 
         const [menuOpen, setMenuOpen] = useState(false);
         const [aboutModalOpen, setAboutModalOpen] = useState(false);
+        const [isPlaying, setIsPlaying] = useState(false);
+        const [fileUploaded, setFileUploaded] = useState(false);
         const fileInputRef = useRef(null);
 
         const handleMenuOpen = () => {
@@ -73,16 +77,18 @@ export const BottomNav: React.FC<BottomNavProps> =
             fileInputRef.current.click();
         };
 
-
         const buttonStyle = {
             color: 'white',
+        }
+
+        const togglePlayPause = () => {
+            setIsPlaying(!isPlaying);
+            !isPlaying ? handlePause() : handleResume();
         }
 
 
         return (
             <div>
-                <button onClick={handleResume}>Resume</button>
-                <button onClick={handlePause}>Pause</button>
                 <input
                     type="file"
                     accept="audio/*"
@@ -112,6 +118,14 @@ export const BottomNav: React.FC<BottomNavProps> =
                         icon={fileOnRef ? <FileUploadIcon style={{ color: 'red' }} /> : <FileUploadIcon style={{ color: 'green' }} />}
                         onClick={handleUploadClick}
                     />
+                    {fileOnRef &&
+                        <BottomNavigationAction
+                            style={buttonStyle}
+                            label={isPlaying ? 'Resume' : 'Pause'}
+                            icon={isPlaying ? <PlayCircleOutlineIcon /> : <PauseIcon />}
+                            onClick={togglePlayPause}
+                        />
+                    }
                     <BottomNavigationAction
                         style={buttonStyle}
                         label="About"
