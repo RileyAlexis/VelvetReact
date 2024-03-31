@@ -27,6 +27,9 @@ export const BottomNav: React.FC<BottomNavProps> =
         const [menuOpen, setMenuOpen] = useState(false);
         const [aboutModalOpen, setAboutModalOpen] = useState(false);
         const fileInputRef = useRef(null);
+
+        //This console.log is here because typescript was being annoying about not using the 
+        //audioFile prop and I didnt want to delete it because Ill need it later
         console.log(typeof audioFile);
 
         const handleMenuOpen = () => {

@@ -20,6 +20,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
         const width: number = window.innerWidth - 50;
         const [height, setHeight] = useState<number>(window.innerHeight * 0.75);
 
+        //Sets the height of the chart dynamically for use in mobile portrait view
         useEffect(() => {
             if (plotRef.current) setHeight(plotRef.current.clientHeight);
         }, [plotRef.current])

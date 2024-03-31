@@ -158,7 +158,7 @@ export const App: React.FC = () => {
 
             //First 5 values on spectralCentroid and perceptualSpread are NaN
             //If statement ensures the data shows on the graph immediately instead of
-            //after 30 updates
+            //after 30 updates as determined by the windowing function
             if (features.spectralCentroid) {
               spectralSmall.push(
                 normalizeSpectralCentroid(
@@ -166,6 +166,7 @@ export const App: React.FC = () => {
                   audioContext.current.sampleRate,
                   fftAnalyzer.fftSize));
             }
+            //Todo - Map RMS value to the displayed scale
             rmsSmall.push(features.rms * 500);
             const yinValue = yin(dataArray, audioContext.current.sampleRate, 0.05);
 
@@ -174,6 +175,7 @@ export const App: React.FC = () => {
             }
             formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum));
 
+            //Todo - Map perceptual Spread to the hertz scale
             if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
 
             if (spectralSmall.length >= dataLengthRef.current) {
