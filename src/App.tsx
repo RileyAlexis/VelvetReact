@@ -20,15 +20,16 @@ import { AppOptions } from './interfaces';
 
 export const App: React.FC = () => {
   const audioContext = useRef<AudioContext | null>(null);
-  const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | null>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | AudioBufferSourceNode | null>(null);
   const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
-  const [audioFile, setAudioFile] = useState<File>(null);
+  // const [audioFile, setAudioFile] = useState<File>(null);
 
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  // const [isPaused, setIsPaused] = useState<boolean>(true);
-  // const [isEnded, setIsEnded] = useState<boolean>(false);
+  const [micOn, setMicOn] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(true);
+  const [isEnded, setIsEnded] = useState<boolean>(false);
 
   const [rmsArray, setRmsArray] = useState<number[]>([]);
   const [spectralArray, setSpectralArray] = useState<number[]>([]);
@@ -54,8 +55,12 @@ export const App: React.FC = () => {
     dataLength: 500,
   });
 
-  const averageTicksRef = useRef(appOptions.averageTicks);
-  const dataLengthRef = useRef(appOptions.dataLength);
+  const averageTicksRef = useRef<number>(appOptions.averageTicks);
+  const dataLengthRef = useRef<number>(appOptions.dataLength);
+  const micOnRef = useRef<boolean>(false);
+  const fileOnRef = useRef<boolean>(false);
+  const audioFileRef = useRef<boolean>(false);
+
 
   let rmsSmall: number[] = [];
   let spectralSmall: number[] = [];
@@ -69,11 +74,31 @@ export const App: React.FC = () => {
     if (!audioContext.current) {
       audioContext.current = new AudioContext();
       setIsRecording(true);
-      startAnalyzer();
+      micOnRef.current = true;
+      setMicOn(true);
+      startAnalyzer(null);
     }
     if (audioContext.current) {
       setIsRecording(true);
-      startAnalyzer();
+      micOnRef.current = true;
+      setMicOn(true);
+      startAnalyzer(null);
+    }
+  }
+
+  const startFileAnalyzing = (file: File) => {
+    console.log('File Analyzer function called');
+    if (!audioContext.current) {
+      audioContext.current = new AudioContext();
+      setIsRecording(true);
+      fileOnRef.current = true;
+      startAnalyzer(file);
+
+      if (audioContext.current) {
+        setIsRecording(true);
+        fileOnRef.current = true;
+        startAnalyzer(file);
+      }
     }
   }
 
@@ -110,17 +135,38 @@ export const App: React.FC = () => {
   }, [appOptions]);
 
 
-  const startAnalyzer = async () => {
+  const startAnalyzer = async (audioFile: File) => {
 
     audioContext.current?.resume();
+    let source: MediaStreamAudioSourceNode | AudioBufferSourceNode | null = null;
 
     if (!isRecording) {
       try {
-        let stream: MediaStream | null = null;
-        let source: MediaStreamAudioSourceNode | null = null;
+        if (micOnRef.current) {
+          let stream: MediaStream | null = null;
 
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        source = audioContext.current?.createMediaStreamSource(stream);
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          source = audioContext.current?.createMediaStreamSource(stream);
+        }
+        if (audioFile) {
+          const arrayBuffer = await audioFile.arrayBuffer();
+          const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
+
+          source = audioContext.current.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioContext.current.destination);
+          source?.start();
+
+          source.addEventListener('ended', () => {
+            audioContext.current!.suspend();
+            console.log('Ended event triggered');
+            setIsRecording(false);
+            setIsPaused(true);
+            setIsEnded(true);
+            analyzer?.stop();
+          });
+
+        }
 
         //Set low pass filter to reduce noise
         const lowpass = audioContext.current.createBiquadFilter();
@@ -221,11 +267,14 @@ export const App: React.FC = () => {
         // mediaStream.disconnect();
         audioContext.current?.suspend();
       }
+
       if (meydaAnalyzer) {
         meydaAnalyzer.stop();
         console.log('Meyda stop called');
       }
       setIsRecording(false);
+      micOnRef.current = false;
+      setMicOn(false);
     }
   };
 
@@ -255,10 +304,11 @@ export const App: React.FC = () => {
         <BottomNav
           isRecording={isRecording}
           startRecording={startRecording}
+          startFileAnalyzing={startFileAnalyzing}
           appOptions={appOptions}
           setAppOptions={setAppOptions}
-          audioFile={audioFile}
-          setAudioFile={setAudioFile}
+          fileOnRef={fileOnRef.current}
+          micOn={micOn}
         />
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 import {
     BottomNavigation, BottomNavigationAction,
@@ -15,22 +15,19 @@ import { AppOptions } from '../interfaces';
 interface BottomNavProps {
     isRecording: boolean,
     startRecording: Function,
+    startFileAnalyzing: Function,
     appOptions: AppOptions,
     setAppOptions: Function,
-    audioFile: File,
-    setAudioFile: Function,
+    micOn: boolean,
+    fileOnRef: boolean,
 }
 
 export const BottomNav: React.FC<BottomNavProps> =
-    ({ isRecording, startRecording, appOptions, setAppOptions, audioFile, setAudioFile }) => {
+    ({ isRecording, startRecording, startFileAnalyzing, appOptions, setAppOptions, micOn, fileOnRef }) => {
 
         const [menuOpen, setMenuOpen] = useState(false);
         const [aboutModalOpen, setAboutModalOpen] = useState(false);
         const fileInputRef = useRef(null);
-
-        //This console.log is here because typescript was being annoying about not using the 
-        //audioFile prop and I didnt want to delete it because Ill need it later
-        console.log(typeof audioFile);
 
         const handleMenuOpen = () => {
             setMenuOpen(true);
@@ -56,8 +53,7 @@ export const BottomNav: React.FC<BottomNavProps> =
             const file = e.target.files?.[0];
             if (file) {
                 console.log('File Uploaded');
-                setAudioFile(file);
-                startRecording();
+                startFileAnalyzing(file);
             }
         }
 
@@ -69,6 +65,8 @@ export const BottomNav: React.FC<BottomNavProps> =
         const buttonStyle = {
             color: 'white',
         }
+
+
 
         return (
             <div>
@@ -91,14 +89,14 @@ export const BottomNav: React.FC<BottomNavProps> =
                     <BottomNavigationAction
                         style={buttonStyle}
                         label="Mic"
-                        icon={isRecording ? <MicOff style={{ color: 'red' }} /> : <Mic style={{ color: 'green' }} />}
+                        icon={micOn ? <MicOff style={{ color: 'red' }} /> : <Mic style={{ color: 'green' }} />}
                         onClick={handleMicToggle}
                     />
 
                     <BottomNavigationAction
                         style={buttonStyle}
                         label="File"
-                        icon={audioFile ? <FileUploadIcon style={{ color: 'red' }} /> : <FileUploadIcon style={{ color: 'green' }} />}
+                        icon={fileOnRef ? <FileUploadIcon style={{ color: 'red' }} /> : <FileUploadIcon style={{ color: 'green' }} />}
                         onClick={handleUploadClick}
                     />
                     <BottomNavigationAction
