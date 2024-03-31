@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 import {
     BottomNavigation, BottomNavigationAction,
+    Button,
     Modal
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
@@ -20,10 +21,21 @@ interface BottomNavProps {
     setAppOptions: Function,
     micOn: boolean,
     fileOnRef: boolean,
+    handlePause: Function,
+    handleResume: Function
 }
 
 export const BottomNav: React.FC<BottomNavProps> =
-    ({ isRecording, startRecording, startFileAnalyzing, appOptions, setAppOptions, micOn, fileOnRef }) => {
+    ({ isRecording,
+        startRecording,
+        startFileAnalyzing,
+        appOptions,
+        setAppOptions,
+        micOn,
+        fileOnRef,
+        handlePause,
+        handleResume
+    }) => {
 
         const [menuOpen, setMenuOpen] = useState(false);
         const [aboutModalOpen, setAboutModalOpen] = useState(false);
@@ -67,9 +79,10 @@ export const BottomNav: React.FC<BottomNavProps> =
         }
 
 
-
         return (
             <div>
+                <button onClick={handleResume}>Resume</button>
+                <button onClick={handlePause}>Pause</button>
                 <input
                     type="file"
                     accept="audio/*"

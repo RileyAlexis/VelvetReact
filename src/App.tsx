@@ -59,7 +59,7 @@ export const App: React.FC = () => {
   const dataLengthRef = useRef<number>(appOptions.dataLength);
   const micOnRef = useRef<boolean>(false);
   const fileOnRef = useRef<boolean>(false);
-  const audioFileRef = useRef<boolean>(false);
+  const audioFileRef = useRef<File>(null);
 
 
   let rmsSmall: number[] = [];
@@ -92,11 +92,13 @@ export const App: React.FC = () => {
       audioContext.current = new AudioContext();
       setIsRecording(true);
       fileOnRef.current = true;
+      audioFileRef.current = file;
       startAnalyzer(file);
 
       if (audioContext.current) {
         setIsRecording(true);
         fileOnRef.current = true;
+        audioFileRef.current = file;
         startAnalyzer(file);
       }
     }
@@ -154,6 +156,10 @@ export const App: React.FC = () => {
 
           source = audioContext.current.createBufferSource();
           source.buffer = audioBuffer;
+
+          // Placing the connect here skips the high and low pass filters for playing 
+          // the audio through the speakers. Filters are still applied to the data display.
+          // Audio sounds muffled when run through the filters.
           source.connect(audioContext.current.destination);
           source?.start();
 
@@ -163,9 +169,9 @@ export const App: React.FC = () => {
             setIsRecording(false);
             setIsPaused(true);
             setIsEnded(true);
+            fileOnRef.current = false;
             analyzer?.stop();
           });
-
         }
 
         //Set low pass filter to reduce noise
@@ -278,6 +284,30 @@ export const App: React.FC = () => {
     }
   };
 
+  const handlePause = () => {
+
+    audioContext.current?.suspend();
+    // meydaAnalyzer?.stop(); //Stopping analyzer on suspend results in multiple analyzers running
+    setIsRecording(false);
+    setIsPaused(true);
+
+    setIsRecording(false);
+  }
+
+  const handleResume = () => {
+    if (audioFileRef.current) {
+      audioContext.current?.resume();
+      // meydaAnalyzer?.start(); //Stopping analyzer on suspend results in multiple analyzers running
+      setIsRecording(true);
+      setIsPaused(false);
+    } else {
+      console.error('Please select a file to analyze');
+
+    }
+  }
+
+
+
   useEffect(() => {
     averageTicksRef.current = appOptions.averageTicks;
     dataLengthRef.current = appOptions.dataLength;
@@ -309,6 +339,8 @@ export const App: React.FC = () => {
           setAppOptions={setAppOptions}
           fileOnRef={fileOnRef.current}
           micOn={micOn}
+          handlePause={handlePause}
+          handleResume={handleResume}
         />
       </div>
 
