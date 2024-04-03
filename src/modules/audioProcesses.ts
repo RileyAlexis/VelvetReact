@@ -22,3 +22,10 @@ export const movingWindowFilter = (data: number[], averageTicks: number) => {
     return dataSum.slice(30).map((value, index) =>
         (value - dataSum[index]) / averageTicks);
 }
+
+//Sets the Meyda output of 0 to half the FFT Size against the hertz scale
+export const normalizeSpectralCentroid =
+    (spectralCentroid: number, sampleRate: number, fftSize: number) => {
+        const frequency = spectralCentroid * (sampleRate / fftSize);
+        return frequency;
+    };

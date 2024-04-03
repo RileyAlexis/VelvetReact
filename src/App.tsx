@@ -17,6 +17,7 @@ import { BottomNav } from './components/BottomNav';
 //Modules
 import { calculateFirstFormantFrequency } from './modules/audioProcesses.js';
 import { movingWindowFilter } from './modules/audioProcesses.js';
+import { normalizeSpectralCentroid } from './modules/audioProcesses.js';
 
 //Interfaces
 import { AppOptions } from './interfaces';
@@ -109,26 +110,6 @@ export const App: React.FC = () => {
     }
   }
 
-  //Sets the Meyda output of 0 to half the FFT Size against the hertz scale
-  const normalizeSpectralCentroid =
-    (spectralCentroid: number, sampleRate: number, fftSize: number) => {
-      const frequency = spectralCentroid * (sampleRate / fftSize);
-      return frequency;
-    };
-
-
-
-  // const movingWindowFilter = useCallback((data: number[]) => {
-  //   const dataSum = [0];
-  //   for (let i = 0; i < data.length; i++) {
-  //     dataSum[i + 1] = dataSum[i] + data[i];
-  //   }
-
-  //   return dataSum.slice(30).map((value, index) =>
-  //     (value - dataSum[index]) / averageTicksRef.current);
-  // }, [appOptions]);
-
-
   const startAnalyzer = async (audioFile: File) => {
 
     audioContext.current?.resume();
@@ -156,16 +137,31 @@ export const App: React.FC = () => {
           source.connect(audioContext.current.destination);
           source.start();
 
-          source.addEventListener('ended', async () => {
-            console.log('Ended event triggered');
+          useEffect(() => {
+            const handleFileEnd = () => {
+              console.log('File end event triggered');
+              source.removeEventListener('ended', handleFileEnd);
+            }
 
-            await audioContext.current!.suspend();
-            setIsRecording(false);
-            setIsEnded(true);
-            setIsFilePlaying(false);
-            analyzer?.stop();
-            audioContext.current = null;
-          });
+            source.addEventListener('ended', async () => {
+              console.log('Ended event triggered');
+              await audioContext.current!.suspend();
+              setIsRecording(false);
+              setIsEnded(true);
+              setIsFilePlaying(false);
+              analyzer?.stop();
+              audioContext.current = null;
+            });
+
+            return () => {
+              source.removeEventListener('ended', handleFileEnd);
+
+            }
+
+
+
+          })
+
         }
 
         //Set low pass filter to reduce noise
