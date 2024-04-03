@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import meyda from 'meyda';
-import { yin } from './yinIFFEE.js';
+import { yin } from './modules/yinIFFEE.js';
 
 //Material UI
 // import { useMediaQuery } from "@mui/material";
@@ -14,6 +14,10 @@ import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 import { SpectralPlot } from './components/SpectralPlot';
 import { BottomNav } from './components/BottomNav';
 
+//Modules
+import { calculateFirstFormantFrequency } from './modules/audioProcesses.js';
+import { movingWindowFilter } from './modules/audioProcesses.js';
+
 //Interfaces
 import { AppOptions } from './interfaces';
 
@@ -23,14 +27,9 @@ export const App: React.FC = () => {
   const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | AudioBufferSourceNode | null>(null);
   const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
-
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [isMicOn, setIsMicOn] = useState<boolean>(false);
   const [isFilePlaying, setIsFilePlaying] = useState<boolean>(false);
-
-
-
-  const [isPaused, setIsPaused] = useState<boolean>(true);
   const [isEnded, setIsEnded] = useState<boolean>(false);
 
   const [rmsArray, setRmsArray] = useState<number[]>([]);
@@ -60,7 +59,6 @@ export const App: React.FC = () => {
   const averageTicksRef = useRef<number>(appOptions.averageTicks);
   const dataLengthRef = useRef<number>(appOptions.dataLength);
   const micOnRef = useRef<boolean>(false);
-  const fileOnRef = useRef<boolean>(false);
   const audioFileRef = useRef<File>(null);
 
 
@@ -93,14 +91,12 @@ export const App: React.FC = () => {
       audioContext.current = new AudioContext();
       setIsRecording(true);
       setIsFilePlaying(true);
-      // fileOnRef.current = true;
       audioFileRef.current = file;
       startAnalyzer(file);
 
       if (audioContext.current) {
         setIsRecording(true);
         setIsFilePlaying(true);
-        // fileOnRef.current = true;
         audioFileRef.current = file;
         startAnalyzer(file);
       }
@@ -109,10 +105,8 @@ export const App: React.FC = () => {
     //Allows replay of the same file
     if (audioContext.current.state === 'suspended') {
       setIsRecording(true);
-      // fileOnRef.current = true;
       startAnalyzer(audioFileRef.current);
     }
-
   }
 
   //Sets the Meyda output of 0 to half the FFT Size against the hertz scale
@@ -122,30 +116,17 @@ export const App: React.FC = () => {
       return frequency;
     };
 
-  const calculateFirstFormantFrequency = (dataArray: Float32Array) => {
-    let peakIndex = 0;
-    let peakValue = -Infinity;
-    for (let i = 0; i < dataArray.length; i++) {
-      if (dataArray[i] > peakValue) {
-        peakValue = dataArray[i];
-        peakIndex = i;
-      }
 
-      // console.log("First formant frequency:", firstFormantFrequency.toFixed(2), "Hz");
-    }
-    const firstFormantFrequency = (peakIndex * audioContext.current.sampleRate) / dataArray.length;
-    return firstFormantFrequency;
-  }
 
-  const movingWindowFilter = useCallback((data: number[]) => {
-    const dataSum = [0];
-    for (let i = 0; i < data.length; i++) {
-      dataSum[i + 1] = dataSum[i] + data[i];
-    }
+  // const movingWindowFilter = useCallback((data: number[]) => {
+  //   const dataSum = [0];
+  //   for (let i = 0; i < data.length; i++) {
+  //     dataSum[i + 1] = dataSum[i] + data[i];
+  //   }
 
-    return dataSum.slice(30).map((value, index) =>
-      (value - dataSum[index]) / averageTicksRef.current);
-  }, [appOptions]);
+  //   return dataSum.slice(30).map((value, index) =>
+  //     (value - dataSum[index]) / averageTicksRef.current);
+  // }, [appOptions]);
 
 
   const startAnalyzer = async (audioFile: File) => {
@@ -173,12 +154,12 @@ export const App: React.FC = () => {
           // the audio through the speakers. Filters are still applied to the data display.
           // Audio sounds muffled when run through the filters.
           source.connect(audioContext.current.destination);
-          source?.start();
+          source.start();
 
           source.addEventListener('ended', async () => {
-            await audioContext.current!.suspend();
-            // await audioContext.current.close();
             console.log('Ended event triggered');
+
+            await audioContext.current!.suspend();
             setIsRecording(false);
             setIsEnded(true);
             setIsFilePlaying(false);
@@ -238,7 +219,7 @@ export const App: React.FC = () => {
             if (yinValue) {
               yinFrequencySmall.push(yinValue);
             }
-            formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum));
+            formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.current.sampleRate));
 
             //Todo - Map perceptual Spread to the hertz scale
             if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
@@ -260,15 +241,16 @@ export const App: React.FC = () => {
               yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
             }
 
-            setSpectralArray(movingWindowFilter(spectralSmall));
-            setRmsArray(movingWindowFilter(rmsSmall));
-            setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
+            setSpectralArray(movingWindowFilter(spectralSmall, averageTicksRef.current));
+            setRmsArray(movingWindowFilter(rmsSmall, averageTicksRef.current));
+            setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall, averageTicksRef.current));
             // setPowerSpectrumArray(features.powerSpectrum);
             fftAnalyzer.getFloatTimeDomainData(dataArray);
             // formantAnalyzer.getFloatFrequencyData(formantArray);
 
-            setFormantFrequencyArray(movingWindowFilter(formantFrequencySmall));
-            setYinFrequencyArray(movingWindowFilter(yinFrequencySmall))
+            setFormantFrequencyArray(movingWindowFilter(formantFrequencySmall, averageTicksRef.current));
+            setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
+            setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
           }
 
         });
@@ -299,20 +281,17 @@ export const App: React.FC = () => {
 
   const handlePause = () => {
 
-    audioContext.current?.suspend();
+    audioContext.current.suspend();
     // meydaAnalyzer?.stop(); //Stopping analyzer on suspend results in multiple analyzers running
     setIsFilePlaying(false);
 
   }
 
   const handleResume = () => {
-    if (audioFileRef.current) {
-      audioContext.current?.resume();
-      // meydaAnalyzer?.start(); //Stopping analyzer on suspend results in multiple analyzers running
-      setIsFilePlaying(true);
-    } else {
-      console.error('Please select a file to analyze');
-    }
+    audioContext.current.resume();
+    // meydaAnalyzer?.start(); //Stopping analyzer on suspend results in multiple analyzers running
+    setIsFilePlaying(true);
+
   }
 
   useEffect(() => {
@@ -344,7 +323,6 @@ export const App: React.FC = () => {
           startFileAnalyzing={startFileAnalyzing}
           appOptions={appOptions}
           setAppOptions={setAppOptions}
-          // fileOnRef={fileOnRef.current}
           isMicOn={isMicOn}
           handlePause={handlePause}
           handleResume={handleResume}
@@ -353,8 +331,6 @@ export const App: React.FC = () => {
           isFilePlaying={isFilePlaying}
         />
       </div>
-
-
-    </div >
+    </div>
   )
 }

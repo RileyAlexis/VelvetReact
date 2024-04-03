@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 import {
     BottomNavigation, BottomNavigationAction,
-    Button,
     Modal
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
@@ -22,7 +21,6 @@ interface BottomNavProps {
     appOptions: AppOptions,
     setAppOptions: Function,
     isMicOn: boolean,
-    // fileOnRef: boolean,
     handlePause: Function,
     handleResume: Function,
     isEnded: boolean,
@@ -37,7 +35,6 @@ export const BottomNav: React.FC<BottomNavProps> =
         appOptions,
         setAppOptions,
         isMicOn,
-        // fileOnRef,
         handlePause,
         handleResume,
         isEnded,
@@ -81,6 +78,7 @@ export const BottomNav: React.FC<BottomNavProps> =
                 fileForReplayRef.current = file;
                 setShowPlayPause(true);
                 setIsPlaying(!isPlaying);
+                setIsEnded(false);
                 startFileAnalyzing(file);
             }
         }
@@ -96,16 +94,15 @@ export const BottomNav: React.FC<BottomNavProps> =
         const togglePlayPause = useCallback(() => {
             setIsPlaying(!isPlaying);
 
-            if (isPlaying && !isEnded) {
+            if (isPlaying && isFilePlaying) {
                 handlePause();
-            } else if (!isPlaying && !isEnded) {
+            } else if (!isPlaying && !isFilePlaying) {
                 handleResume();
             } else if (isEnded) {
                 setIsEnded(false);
                 startFileAnalyzing(fileForReplayRef.current);
             }
-            // !isPlaying ? handlePause() : handleResume();
-        }, [isPlaying, isEnded]);
+        }, [isPlaying, isEnded, isFilePlaying]);
 
         useEffect(() => {
             console.log('isPlaying', isPlaying);
