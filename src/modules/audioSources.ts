@@ -25,7 +25,7 @@ export const accessFileStream =
                 .then((arrayBuffer) =>
                     audioContext.decodeAudioData(arrayBuffer)
                 ).then((audioBuffer) => {
-                    const source = audioContext.createBufferSource();
+                    const source = new AudioBufferSourceNode(audioContext);
                     source.buffer = audioBuffer;
                     resolve(source);
                 }).catch((error) => {
