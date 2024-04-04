@@ -15,8 +15,6 @@ export interface AppOptions {
 }
 
 export interface AudioData {
-    time: number,
-    rms: number,
-    spectralCentroid: number,
-    perceptualSpread: number,
+    formantFrequency: number[],
+    yinFrequency: number[],
 }

@@ -115,7 +115,7 @@ export const App: React.FC = () => {
 
   const startAnalyzer = async (audioFile: File) => {
 
-    audioContext.current?.resume();
+    audioContext.current.resume();
     let source: MediaStreamAudioSourceNode | AudioBufferSourceNode | null = null;
 
     if (!isRecording) {
@@ -135,6 +135,19 @@ export const App: React.FC = () => {
             source = sourceNode;
             source.connect(audioContext.current.destination);
             source.start();
+
+            source.addEventListener('ended', async () => {
+              const handleFileEnd = () => {
+                source.removeEventListener('ended', handleFileEnd);
+              }
+
+              console.log('Ended event triggered');
+              await audioContext.current.suspend();
+              setIsRecording(false);
+              setIsEnded(true);
+              setIsFilePlaying(false);
+              await analyzer?.stop();
+            });
           })
           .catch((error) => {
             console.error("Error creating audio file buffer", error);
