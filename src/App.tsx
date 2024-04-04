@@ -18,6 +18,7 @@ import { BottomNav } from './components/BottomNav';
 import { calculateFirstFormantFrequency } from './modules/audioProcesses.js';
 import { movingWindowFilter } from './modules/audioProcesses.js';
 import { normalizeSpectralCentroid } from './modules/audioProcesses.js';
+import { accessMic } from './modules/audioSources.js';
 
 //Interfaces
 import { AppOptions } from './interfaces';
@@ -73,7 +74,9 @@ export const App: React.FC = () => {
 
   const startRecording = () => {
     if (!audioContext.current) {
-      audioContext.current = new AudioContext();
+      audioContext.current = new AudioContext({
+        latencyHint: "interactive"
+      });
       setIsRecording(true);
       micOnRef.current = true;
       setIsMicOn(true);
@@ -116,142 +119,144 @@ export const App: React.FC = () => {
     let source: MediaStreamAudioSourceNode | AudioBufferSourceNode | null = null;
 
     if (!isRecording) {
-      try {
-        if (micOnRef.current) {
-          let stream: MediaStream | null = null;
 
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          source = audioContext.current?.createMediaStreamSource(stream);
-        }
-        if (audioFile) {
-          console.log(audioFile);
-          const arrayBuffer = await audioFile.arrayBuffer();
-          const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
+      if (micOnRef.current) {
 
-          source = audioContext.current.createBufferSource();
-          source.buffer = audioBuffer;
-
-          // Placing the connect here skips the high and low pass filters for playing 
-          // the audio through the speakers. Filters are still applied to the data display.
-          // Audio sounds muffled when run through the filters.
-          source.connect(audioContext.current.destination);
-          source.start();
-
-          useEffect(() => {
-            const handleFileEnd = () => {
-              console.log('File end event triggered');
-              source.removeEventListener('ended', handleFileEnd);
-            }
-
-            source.addEventListener('ended', async () => {
-              console.log('Ended event triggered');
-              await audioContext.current!.suspend();
-              setIsRecording(false);
-              setIsEnded(true);
-              setIsFilePlaying(false);
-              analyzer?.stop();
-              audioContext.current = null;
-            });
-
-            return () => {
-              source.removeEventListener('ended', handleFileEnd);
-            }
+        await accessMic(audioContext.current)
+          .then((sourceNode) => {
+            source = sourceNode;
+          }).catch((error) => {
+            console.error("Error accessing microphone", error);
           })
-        }
-
-        //Set low pass filter to reduce noise
-        const lowpass = audioContext.current.createBiquadFilter();
-        lowpass.type = 'lowpass';
-        lowpass.frequency.value = 300; // Set the cutoff frequency
-        lowpass.Q.value = 1;
-
-        const highpass = audioContext.current.createBiquadFilter();
-        highpass.type = 'highpass';
-        highpass.frequency.value = 60;
-
-        //Connect filters to audiocontext
-        source.connect(lowpass);
-        lowpass.connect(highpass);
-        setMediaStream(source);
-
-        const fftAnalyzer = audioContext.current.createAnalyser();
-        fftAnalyzer.fftSize = 2048;
-        const bufferLength = fftAnalyzer.frequencyBinCount;
-        const dataArray = new Float32Array(bufferLength);
-        highpass.connect(fftAnalyzer);
-
-        // const formantAnalyzer = audioContext.current.createAnalyser();
-        // formantAnalyzer.fftSize = 2048;
-        // const formantBufferLength = formantAnalyzer.frequencyBinCount;
-        // const formantArray = new Float32Array(formantBufferLength);
-        // highpass.connect(formantAnalyzer);
-
-        const analyzer = meyda.createMeydaAnalyzer({
-          audioContext: audioContext.current,
-          source: fftAnalyzer,
-          bufferSize: 2048,
-          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'amplitudeSpectrum'],
-          callback: (features: Meyda.MeydaFeaturesObject) => {
-
-            //First 5 values on spectralCentroid and perceptualSpread are NaN
-            //If statement ensures the data shows on the graph immediately instead of
-            //after 30 updates as determined by the windowing function
-            if (features.spectralCentroid) {
-              spectralSmall.push(
-                normalizeSpectralCentroid(
-                  features.spectralCentroid,
-                  audioContext.current.sampleRate,
-                  fftAnalyzer.fftSize));
-            }
-            //Todo - Map RMS value to the displayed scale
-            rmsSmall.push(features.rms * 500);
-            const yinValue = yin(dataArray, audioContext.current.sampleRate, 0.05);
-
-            if (yinValue) {
-              yinFrequencySmall.push(yinValue);
-            }
-            formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.current.sampleRate));
-
-            //Todo - Map perceptual Spread to the hertz scale
-            if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
-
-            if (spectralSmall.length >= dataLengthRef.current) {
-              spectralSmall = spectralSmall.slice(-dataLengthRef.current);
-            }
-            if (rmsSmall.length >= dataLengthRef.current) {
-              rmsSmall = rmsSmall.slice(-dataLengthRef.current);
-            }
-            if (perceptualSpreadSmall.length >= dataLengthRef.current) {
-              perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
-            }
-            if (formantFrequencySmall.length >= dataLengthRef.current) {
-              formantFrequencySmall = formantFrequencySmall.slice(-dataLengthRef.current);
-            }
-
-            if (yinFrequencySmall.length >= dataLengthRef.current) {
-              yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
-            }
-
-            setSpectralArray(movingWindowFilter(spectralSmall, averageTicksRef.current));
-            setRmsArray(movingWindowFilter(rmsSmall, averageTicksRef.current));
-            setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall, averageTicksRef.current));
-            // setPowerSpectrumArray(features.powerSpectrum);
-            fftAnalyzer.getFloatTimeDomainData(dataArray);
-            // formantAnalyzer.getFloatFrequencyData(formantArray);
-
-            setFormantFrequencyArray(movingWindowFilter(formantFrequencySmall, averageTicksRef.current));
-            setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
-            setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
-          }
-        });
-
-        analyzer.start();
-        setMeydaAnalyzer(analyzer);
-
-        setIsRecording(true);
-      } catch (error) {
-        console.error('Error accessing microphone:', error);
       }
+
+      if (audioFile) {
+        console.log(audioFile);
+        const arrayBuffer = await audioFile.arrayBuffer();
+        const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
+
+        source = audioContext.current.createBufferSource();
+        source.buffer = audioBuffer;
+
+        // Placing the connect here skips the high and low pass filters for playing 
+        // the audio through the speakers. Filters are still applied to the data display.
+        // Audio sounds muffled when run through the filters.
+        source.connect(audioContext.current.destination);
+        source.start();
+
+        useEffect(() => {
+          const handleFileEnd = () => {
+            console.log('File end event triggered');
+            source.removeEventListener('ended', handleFileEnd);
+          }
+
+          source.addEventListener('ended', async () => {
+            console.log('Ended event triggered');
+            await audioContext.current!.suspend();
+            setIsRecording(false);
+            setIsEnded(true);
+            setIsFilePlaying(false);
+            analyzer?.stop();
+            audioContext.current = null;
+          });
+
+          return () => {
+            source.removeEventListener('ended', handleFileEnd);
+          }
+        })
+      }
+
+      //Set low pass filter to reduce noise
+      const lowpass = audioContext.current.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 300; // Set the cutoff frequency
+      lowpass.Q.value = 1;
+
+      const highpass = audioContext.current.createBiquadFilter();
+      highpass.type = 'highpass';
+      highpass.frequency.value = 60;
+
+      //Connect filters to audiocontext
+      source.connect(lowpass);
+      lowpass.connect(highpass);
+      setMediaStream(source);
+
+      const fftAnalyzer = audioContext.current.createAnalyser();
+      fftAnalyzer.fftSize = 2048;
+      const bufferLength = fftAnalyzer.frequencyBinCount;
+      const dataArray = new Float32Array(bufferLength);
+      highpass.connect(fftAnalyzer);
+
+      // const formantAnalyzer = audioContext.current.createAnalyser();
+      // formantAnalyzer.fftSize = 2048;
+      // const formantBufferLength = formantAnalyzer.frequencyBinCount;
+      // const formantArray = new Float32Array(formantBufferLength);
+      // highpass.connect(formantAnalyzer);
+
+      const analyzer = meyda.createMeydaAnalyzer({
+        audioContext: audioContext.current,
+        source: fftAnalyzer,
+        bufferSize: 2048,
+        featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'amplitudeSpectrum'],
+        callback: (features: Meyda.MeydaFeaturesObject) => {
+
+          //First 5 values on spectralCentroid and perceptualSpread are NaN
+          //If statement ensures the data shows on the graph immediately instead of
+          //after 30 updates as determined by the windowing function
+          if (features.spectralCentroid) {
+            spectralSmall.push(
+              normalizeSpectralCentroid(
+                features.spectralCentroid,
+                audioContext.current.sampleRate,
+                fftAnalyzer.fftSize));
+          }
+          //Todo - Map RMS value to the displayed scale
+          rmsSmall.push(features.rms * 500);
+          const yinValue = yin(dataArray, audioContext.current.sampleRate, 0.05);
+
+          if (yinValue) {
+            yinFrequencySmall.push(yinValue);
+          }
+          formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.current.sampleRate));
+
+          //Todo - Map perceptual Spread to the hertz scale
+          if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
+
+          if (spectralSmall.length >= dataLengthRef.current) {
+            spectralSmall = spectralSmall.slice(-dataLengthRef.current);
+          }
+          if (rmsSmall.length >= dataLengthRef.current) {
+            rmsSmall = rmsSmall.slice(-dataLengthRef.current);
+          }
+          if (perceptualSpreadSmall.length >= dataLengthRef.current) {
+            perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
+          }
+          if (formantFrequencySmall.length >= dataLengthRef.current) {
+            formantFrequencySmall = formantFrequencySmall.slice(-dataLengthRef.current);
+          }
+
+          if (yinFrequencySmall.length >= dataLengthRef.current) {
+            yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
+          }
+
+          setSpectralArray(movingWindowFilter(spectralSmall, averageTicksRef.current));
+          setRmsArray(movingWindowFilter(rmsSmall, averageTicksRef.current));
+          setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall, averageTicksRef.current));
+          // setPowerSpectrumArray(features.powerSpectrum);
+          fftAnalyzer.getFloatTimeDomainData(dataArray);
+          // formantAnalyzer.getFloatFrequencyData(formantArray);
+
+          setFormantFrequencyArray(movingWindowFilter(formantFrequencySmall, averageTicksRef.current));
+          setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
+          setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
+        }
+      });
+
+      analyzer.start();
+      setMeydaAnalyzer(analyzer);
+
+      setIsRecording(true);
+
     } else {
       console.log('Stop recording called');
       if (audioContext.current) {
