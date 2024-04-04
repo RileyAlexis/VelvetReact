@@ -97,26 +97,19 @@ export const App: React.FC = () => {
     }
   }
 
-  const startFileAnalyzing = (file: File) => {
+  const startFileAnalyzing = async (file: File) => {
     if (!audioContext.current) {
-      audioContext.current = new AudioContext();
-      setIsRecording(true);
-      setIsFilePlaying(true);
-      audioFileRef.current = file;
-      startAnalyzer(file);
+      audioContext.current = new AudioContext({
+        latencyHint: "interactive"
+      });
 
-      if (audioContext.current) {
-        setIsRecording(true);
-        setIsFilePlaying(true);
-        audioFileRef.current = file;
-        startAnalyzer(file);
-      }
-    }
+      await accessFileStream(audioContext.current, file)
+        .then((sourceNode) => {
+          startAnalyzer(audioContext.current, sourceNode);
+        }).catch((error) => {
+          console.error("Error accessing audio file", error);
+        })
 
-    //Allows replay of the same file
-    if (audioContext.current.state === 'suspended') {
-      setIsRecording(true);
-      startAnalyzer(audioFileRef.current);
     }
   }
 
