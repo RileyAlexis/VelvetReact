@@ -18,7 +18,7 @@ import { BottomNav } from './components/BottomNav';
 import { calculateFirstFormantFrequency } from './modules/audioProcesses.js';
 import { movingWindowFilter } from './modules/audioProcesses.js';
 import { normalizeSpectralCentroid } from './modules/audioProcesses.js';
-import { accessMic } from './modules/audioSources.js';
+import { accessMic, accessFileStream } from './modules/audioSources.js';
 
 //Interfaces
 import { AppOptions } from './interfaces';
@@ -121,7 +121,6 @@ export const App: React.FC = () => {
     if (!isRecording) {
 
       if (micOnRef.current) {
-
         await accessMic(audioContext.current)
           .then((sourceNode) => {
             source = sourceNode;
@@ -131,40 +130,53 @@ export const App: React.FC = () => {
       }
 
       if (audioFile) {
-        console.log(audioFile);
-        const arrayBuffer = await audioFile.arrayBuffer();
-        const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
-
-        source = audioContext.current.createBufferSource();
-        source.buffer = audioBuffer;
-
-        // Placing the connect here skips the high and low pass filters for playing 
-        // the audio through the speakers. Filters are still applied to the data display.
-        // Audio sounds muffled when run through the filters.
-        source.connect(audioContext.current.destination);
-        source.start();
-
-        useEffect(() => {
-          const handleFileEnd = () => {
-            console.log('File end event triggered');
-            source.removeEventListener('ended', handleFileEnd);
-          }
-
-          source.addEventListener('ended', async () => {
-            console.log('Ended event triggered');
-            await audioContext.current!.suspend();
-            setIsRecording(false);
-            setIsEnded(true);
-            setIsFilePlaying(false);
-            analyzer?.stop();
-            audioContext.current = null;
+        await accessFileStream(audioContext.current, audioFile)
+          .then((sourceNode) => {
+            source = sourceNode;
+            source.connect(audioContext.current.destination);
+            source.start();
+          })
+          .catch((error) => {
+            console.error("Error creating audio file buffer", error);
           });
-
-          return () => {
-            source.removeEventListener('ended', handleFileEnd);
-          }
-        })
       }
+
+      console.log('Audio File', audioFile);
+      // const arrayBuffer = await audioFile.arrayBuffer();
+      // const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
+
+      // source = audioContext.current.createBufferSource();
+      // source.buffer = audioBuffer;
+
+      // Placing the connect here skips the high and low pass filters for playing
+      // the audio through the speakers. Filters are still applied to the data display.
+      // Audio sounds muffled when run through the filters.
+      // if (audioFile) {
+      //   source.connect(audioContext.current.destination);
+      //   source?.start();
+      // }
+
+      // useEffect(() => {
+      //   const handleFileEnd = () => {
+      //     console.log('File end event triggered');
+      //     source.removeEventListener('ended', handleFileEnd);
+      //   }
+
+      //   source.addEventListener('ended', async () => {
+      //     console.log('Ended event triggered');
+      //     await audioContext.current!.suspend();
+      //     setIsRecording(false);
+      //     setIsEnded(true);
+      //     setIsFilePlaying(false);
+      //     analyzer?.stop();
+      //     audioContext.current = null;
+      //   });
+
+      //   return () => {
+      //     source.removeEventListener('ended', handleFileEnd);
+      //   }
+      // })
+
 
       //Set low pass filter to reduce noise
       const lowpass = audioContext.current.createBiquadFilter();
