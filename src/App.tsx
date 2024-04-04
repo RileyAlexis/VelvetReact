@@ -155,13 +155,8 @@ export const App: React.FC = () => {
 
             return () => {
               source.removeEventListener('ended', handleFileEnd);
-
             }
-
-
-
           })
-
         }
 
         //Set low pass filter to reduce noise
@@ -248,7 +243,6 @@ export const App: React.FC = () => {
             setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
             setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
           }
-
         });
 
         analyzer.start();
@@ -280,7 +274,6 @@ export const App: React.FC = () => {
     audioContext.current.suspend();
     // meydaAnalyzer?.stop(); //Stopping analyzer on suspend results in multiple analyzers running
     setIsFilePlaying(false);
-
   }
 
   const handleResume = () => {
