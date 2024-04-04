@@ -19,6 +19,7 @@ import { calculateFirstFormantFrequency } from './modules/audioProcesses.js';
 import { movingWindowFilter } from './modules/audioProcesses.js';
 import { normalizeSpectralCentroid } from './modules/audioProcesses.js';
 import { accessMic, accessFileStream } from './modules/audioSources.js';
+import { startAnalyzer } from './modules/startAnalyzer.js';
 
 //Interfaces
 import { AppOptions } from './interfaces';
@@ -72,7 +73,7 @@ export const App: React.FC = () => {
 
   // const amplitudeSpectrumRef = useRef(amplitudeSpectrum);
 
-  const startRecording = () => {
+  const startRecording = async () => {
     if (!audioContext.current) {
       audioContext.current = new AudioContext({
         latencyHint: "interactive"
@@ -80,7 +81,13 @@ export const App: React.FC = () => {
       setIsRecording(true);
       micOnRef.current = true;
       setIsMicOn(true);
-      startAnalyzer(null);
+      await accessMic(audioContext.current)
+        .then((sourceNode) => {
+          startAnalyzer(audioContext.current, sourceNode);
+        }).catch((error) => {
+          console.error("Error accessing microphone", error);
+        })
+
     }
     if (audioContext.current) {
       setIsRecording(true);
@@ -113,191 +120,191 @@ export const App: React.FC = () => {
     }
   }
 
-  const startAnalyzer = async (audioFile: File) => {
+  // const startAnalyzer = async (audioFile: File) => {
 
-    audioContext.current.resume();
-    let source: MediaStreamAudioSourceNode | AudioBufferSourceNode | null = null;
+  //   audioContext.current.resume();
+  //   let source: MediaStreamAudioSourceNode | AudioBufferSourceNode | null = null;
 
-    if (!isRecording) {
+  //   if (!isRecording) {
 
-      if (micOnRef.current) {
-        await accessMic(audioContext.current)
-          .then((sourceNode) => {
-            source = sourceNode;
-          }).catch((error) => {
-            console.error("Error accessing microphone", error);
-          })
-      }
+  //     if (micOnRef.current) {
+  //       await accessMic(audioContext.current)
+  //         .then((sourceNode) => {
+  //           source = sourceNode;
+  //         }).catch((error) => {
+  //           console.error("Error accessing microphone", error);
+  //         })
+  //     }
 
-      if (audioFile) {
-        await accessFileStream(audioContext.current, audioFile)
-          .then((sourceNode) => {
-            source = sourceNode;
-            source.connect(audioContext.current.destination);
-            source.start();
+  //     if (audioFile) {
+  //       await accessFileStream(audioContext.current, audioFile)
+  //         .then((sourceNode) => {
+  //           source = sourceNode;
+  //           source.connect(audioContext.current.destination);
+  //           source.start();
 
-            source.addEventListener('ended', async () => {
-              const handleFileEnd = () => {
-                source.removeEventListener('ended', handleFileEnd);
-              }
+  //           source.addEventListener('ended', async () => {
+  //             const handleFileEnd = () => {
+  //               source.removeEventListener('ended', handleFileEnd);
+  //             }
 
-              console.log('Ended event triggered');
-              await audioContext.current.suspend();
-              setIsRecording(false);
-              setIsEnded(true);
-              setIsFilePlaying(false);
-              await analyzer?.stop();
-            });
-          })
-          .catch((error) => {
-            console.error("Error creating audio file buffer", error);
-          });
-      }
+  //             console.log('Ended event triggered');
+  //             await audioContext.current.suspend();
+  //             setIsRecording(false);
+  //             setIsEnded(true);
+  //             setIsFilePlaying(false);
+  //             await analyzer?.stop();
+  //           });
+  //         })
+  //         .catch((error) => {
+  //           console.error("Error creating audio file buffer", error);
+  //         });
+  //     }
 
-      console.log('Audio File', audioFile);
-      // const arrayBuffer = await audioFile.arrayBuffer();
-      // const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
+  //     console.log('Audio File', audioFile);
+  //     // const arrayBuffer = await audioFile.arrayBuffer();
+  //     // const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
 
-      // source = audioContext.current.createBufferSource();
-      // source.buffer = audioBuffer;
+  //     // source = audioContext.current.createBufferSource();
+  //     // source.buffer = audioBuffer;
 
-      // Placing the connect here skips the high and low pass filters for playing
-      // the audio through the speakers. Filters are still applied to the data display.
-      // Audio sounds muffled when run through the filters.
-      // if (audioFile) {
-      //   source.connect(audioContext.current.destination);
-      //   source?.start();
-      // }
+  //     // Placing the connect here skips the high and low pass filters for playing
+  //     // the audio through the speakers. Filters are still applied to the data display.
+  //     // Audio sounds muffled when run through the filters.
+  //     // if (audioFile) {
+  //     //   source.connect(audioContext.current.destination);
+  //     //   source?.start();
+  //     // }
 
-      // useEffect(() => {
-      //   const handleFileEnd = () => {
-      //     console.log('File end event triggered');
-      //     source.removeEventListener('ended', handleFileEnd);
-      //   }
+  //     // useEffect(() => {
+  //     //   const handleFileEnd = () => {
+  //     //     console.log('File end event triggered');
+  //     //     source.removeEventListener('ended', handleFileEnd);
+  //     //   }
 
-      //   source.addEventListener('ended', async () => {
-      //     console.log('Ended event triggered');
-      //     await audioContext.current!.suspend();
-      //     setIsRecording(false);
-      //     setIsEnded(true);
-      //     setIsFilePlaying(false);
-      //     analyzer?.stop();
-      //     audioContext.current = null;
-      //   });
+  //     //   source.addEventListener('ended', async () => {
+  //     //     console.log('Ended event triggered');
+  //     //     await audioContext.current!.suspend();
+  //     //     setIsRecording(false);
+  //     //     setIsEnded(true);
+  //     //     setIsFilePlaying(false);
+  //     //     analyzer?.stop();
+  //     //     audioContext.current = null;
+  //     //   });
 
-      //   return () => {
-      //     source.removeEventListener('ended', handleFileEnd);
-      //   }
-      // })
+  //     //   return () => {
+  //     //     source.removeEventListener('ended', handleFileEnd);
+  //     //   }
+  //     // })
 
 
-      //Set low pass filter to reduce noise
-      const lowpass = audioContext.current.createBiquadFilter();
-      lowpass.type = 'lowpass';
-      lowpass.frequency.value = 300; // Set the cutoff frequency
-      lowpass.Q.value = 1;
+  //     //Set low pass filter to reduce noise
+  //     const lowpass = audioContext.current.createBiquadFilter();
+  //     lowpass.type = 'lowpass';
+  //     lowpass.frequency.value = 300; // Set the cutoff frequency
+  //     lowpass.Q.value = 1;
 
-      const highpass = audioContext.current.createBiquadFilter();
-      highpass.type = 'highpass';
-      highpass.frequency.value = 60;
+  //     const highpass = audioContext.current.createBiquadFilter();
+  //     highpass.type = 'highpass';
+  //     highpass.frequency.value = 60;
 
-      //Connect filters to audiocontext
-      source.connect(lowpass);
-      lowpass.connect(highpass);
-      setMediaStream(source);
+  //     //Connect filters to audiocontext
+  //     source.connect(lowpass);
+  //     lowpass.connect(highpass);
+  //     setMediaStream(source);
 
-      const fftAnalyzer = audioContext.current.createAnalyser();
-      fftAnalyzer.fftSize = 2048;
-      const bufferLength = fftAnalyzer.frequencyBinCount;
-      const dataArray = new Float32Array(bufferLength);
-      highpass.connect(fftAnalyzer);
+  //     const fftAnalyzer = audioContext.current.createAnalyser();
+  //     fftAnalyzer.fftSize = 2048;
+  //     const bufferLength = fftAnalyzer.frequencyBinCount;
+  //     const dataArray = new Float32Array(bufferLength);
+  //     highpass.connect(fftAnalyzer);
 
-      // const formantAnalyzer = audioContext.current.createAnalyser();
-      // formantAnalyzer.fftSize = 2048;
-      // const formantBufferLength = formantAnalyzer.frequencyBinCount;
-      // const formantArray = new Float32Array(formantBufferLength);
-      // highpass.connect(formantAnalyzer);
+  //     // const formantAnalyzer = audioContext.current.createAnalyser();
+  //     // formantAnalyzer.fftSize = 2048;
+  //     // const formantBufferLength = formantAnalyzer.frequencyBinCount;
+  //     // const formantArray = new Float32Array(formantBufferLength);
+  //     // highpass.connect(formantAnalyzer);
 
-      const analyzer = meyda.createMeydaAnalyzer({
-        audioContext: audioContext.current,
-        source: fftAnalyzer,
-        bufferSize: 2048,
-        featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'amplitudeSpectrum'],
-        callback: (features: Meyda.MeydaFeaturesObject) => {
+  //     const analyzer = meyda.createMeydaAnalyzer({
+  //       audioContext: audioContext.current,
+  //       source: fftAnalyzer,
+  //       bufferSize: 2048,
+  //       featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'amplitudeSpectrum'],
+  //       callback: (features: Meyda.MeydaFeaturesObject) => {
 
-          //First 5 values on spectralCentroid and perceptualSpread are NaN
-          //If statement ensures the data shows on the graph immediately instead of
-          //after 30 updates as determined by the windowing function
-          if (features.spectralCentroid) {
-            spectralSmall.push(
-              normalizeSpectralCentroid(
-                features.spectralCentroid,
-                audioContext.current.sampleRate,
-                fftAnalyzer.fftSize));
-          }
-          //Todo - Map RMS value to the displayed scale
-          rmsSmall.push(features.rms * 500);
-          const yinValue = yin(dataArray, audioContext.current.sampleRate, 0.05);
+  //         //First 5 values on spectralCentroid and perceptualSpread are NaN
+  //         //If statement ensures the data shows on the graph immediately instead of
+  //         //after 30 updates as determined by the windowing function
+  //         if (features.spectralCentroid) {
+  //           spectralSmall.push(
+  //             normalizeSpectralCentroid(
+  //               features.spectralCentroid,
+  //               audioContext.current.sampleRate,
+  //               fftAnalyzer.fftSize));
+  //         }
+  //         //Todo - Map RMS value to the displayed scale
+  //         rmsSmall.push(features.rms * 500);
+  //         const yinValue = yin(dataArray, audioContext.current.sampleRate, 0.05);
 
-          if (yinValue) {
-            yinFrequencySmall.push(yinValue);
-          }
-          formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.current.sampleRate));
+  //         if (yinValue) {
+  //           yinFrequencySmall.push(yinValue);
+  //         }
+  //         formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.current.sampleRate));
 
-          //Todo - Map perceptual Spread to the hertz scale
-          if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
+  //         //Todo - Map perceptual Spread to the hertz scale
+  //         if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
 
-          if (spectralSmall.length >= dataLengthRef.current) {
-            spectralSmall = spectralSmall.slice(-dataLengthRef.current);
-          }
-          if (rmsSmall.length >= dataLengthRef.current) {
-            rmsSmall = rmsSmall.slice(-dataLengthRef.current);
-          }
-          if (perceptualSpreadSmall.length >= dataLengthRef.current) {
-            perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
-          }
-          if (formantFrequencySmall.length >= dataLengthRef.current) {
-            formantFrequencySmall = formantFrequencySmall.slice(-dataLengthRef.current);
-          }
+  //         if (spectralSmall.length >= dataLengthRef.current) {
+  //           spectralSmall = spectralSmall.slice(-dataLengthRef.current);
+  //         }
+  //         if (rmsSmall.length >= dataLengthRef.current) {
+  //           rmsSmall = rmsSmall.slice(-dataLengthRef.current);
+  //         }
+  //         if (perceptualSpreadSmall.length >= dataLengthRef.current) {
+  //           perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
+  //         }
+  //         if (formantFrequencySmall.length >= dataLengthRef.current) {
+  //           formantFrequencySmall = formantFrequencySmall.slice(-dataLengthRef.current);
+  //         }
 
-          if (yinFrequencySmall.length >= dataLengthRef.current) {
-            yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
-          }
+  //         if (yinFrequencySmall.length >= dataLengthRef.current) {
+  //           yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
+  //         }
 
-          setSpectralArray(movingWindowFilter(spectralSmall, averageTicksRef.current));
-          setRmsArray(movingWindowFilter(rmsSmall, averageTicksRef.current));
-          setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall, averageTicksRef.current));
-          // setPowerSpectrumArray(features.powerSpectrum);
-          fftAnalyzer.getFloatTimeDomainData(dataArray);
-          // formantAnalyzer.getFloatFrequencyData(formantArray);
+  //         setSpectralArray(movingWindowFilter(spectralSmall, averageTicksRef.current));
+  //         setRmsArray(movingWindowFilter(rmsSmall, averageTicksRef.current));
+  //         setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall, averageTicksRef.current));
+  //         // setPowerSpectrumArray(features.powerSpectrum);
+  //         fftAnalyzer.getFloatTimeDomainData(dataArray);
+  //         // formantAnalyzer.getFloatFrequencyData(formantArray);
 
-          setFormantFrequencyArray(movingWindowFilter(formantFrequencySmall, averageTicksRef.current));
-          setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
-          setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
-        }
-      });
+  //         setFormantFrequencyArray(movingWindowFilter(formantFrequencySmall, averageTicksRef.current));
+  //         setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
+  //         setYinFrequencyArray(movingWindowFilter(yinFrequencySmall, averageTicksRef.current))
+  //       }
+  //     });
 
-      analyzer.start();
-      setMeydaAnalyzer(analyzer);
+  //     analyzer.start();
+  //     setMeydaAnalyzer(analyzer);
 
-      setIsRecording(true);
+  //     setIsRecording(true);
 
-    } else {
-      console.log('Stop recording called');
-      if (audioContext.current) {
-        mediaStream.disconnect();
-        audioContext.current?.suspend();
-      }
+  //   } else {
+  //     console.log('Stop recording called');
+  //     if (audioContext.current) {
+  //       mediaStream.disconnect();
+  //       audioContext.current?.suspend();
+  //     }
 
-      if (meydaAnalyzer) {
-        meydaAnalyzer.stop();
-        console.log('Meyda stop called');
-      }
-      setIsRecording(false);
-      micOnRef.current = false;
-      setIsMicOn(false);
-    }
-  };
+  //     if (meydaAnalyzer) {
+  //       meydaAnalyzer.stop();
+  //       console.log('Meyda stop called');
+  //     }
+  //     setIsRecording(false);
+  //     micOnRef.current = false;
+  //     setIsMicOn(false);
+  //   }
+  // };
 
   const handlePause = () => {
 

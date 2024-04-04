@@ -6,7 +6,9 @@ export const accessMic =
             navigator.mediaDevices.getUserMedia({ audio: true })
 
                 .then((stream) => {
-                    const source = audioContext.createMediaStreamSource(stream);
+                    const source = new MediaStreamAudioSourceNode(audioContext, {
+                        mediaStream: stream
+                    })
                     resolve(source);
                 }).catch((error) => {
                     reject(error);
