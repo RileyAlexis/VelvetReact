@@ -9,6 +9,7 @@ import './App.css'
 
 //Types
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
+import { AudioData } from './interfaces';
 
 //Components
 import { SpectralPlot } from './components/SpectralPlot';
@@ -59,6 +60,11 @@ export const App: React.FC = () => {
     dataLength: 500,
   });
 
+  const [audioData, setAudioData] = useState<AudioData>({
+    yinFrequency: [],
+    formantFrequency: [],
+  });
+
   const averageTicksRef = useRef<number>(appOptions.averageTicks);
   const dataLengthRef = useRef<number>(appOptions.dataLength);
   const micOnRef = useRef<boolean>(false);
@@ -83,17 +89,10 @@ export const App: React.FC = () => {
       setIsMicOn(true);
       await accessMic(audioContext.current)
         .then((sourceNode) => {
-          startAnalyzer(audioContext.current, sourceNode);
+          startAnalyzer(audioContext.current, sourceNode, setAudioData);
         }).catch((error) => {
           console.error("Error accessing microphone", error);
         })
-
-    }
-    if (audioContext.current) {
-      setIsRecording(true);
-      micOnRef.current = true;
-      setIsMicOn(true);
-      startAnalyzer(null);
     }
   }
 
@@ -105,7 +104,7 @@ export const App: React.FC = () => {
 
       await accessFileStream(audioContext.current, file)
         .then((sourceNode) => {
-          startAnalyzer(audioContext.current, sourceNode);
+          startAnalyzer(audioContext.current, sourceNode, setAudioData);
         }).catch((error) => {
           console.error("Error accessing audio file", error);
         })
@@ -328,11 +327,7 @@ export const App: React.FC = () => {
       <div className='plotContainer'>
         <SpectralPlot
           appOptions={appOptions}
-          spectralArray={spectralArray}
-          rmsArray={rmsArray}
-          perceptualSpreadArray={perceptualSpreadArray}
-          yinFrequencyArray={yinFrequencyArray}
-          formantFrequencyArray={formantFrequencyArray}
+          audioData={audioData}
         />
       </div>
       <div className='bottomNav'>
