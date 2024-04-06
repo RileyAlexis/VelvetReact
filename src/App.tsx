@@ -60,6 +60,8 @@ export const App: React.FC = () => {
     dataLength: 500,
   });
 
+  const appOptionsRef = useRef<AppOptions>(appOptions);
+
   const [audioData, setAudioData] = useState<AudioData>({
     yinFrequency: [],
     formantFrequency: [],
@@ -89,7 +91,7 @@ export const App: React.FC = () => {
       setIsMicOn(true);
       await accessMic(audioContext.current)
         .then((sourceNode) => {
-          startAnalyzer(audioContext.current, sourceNode, setAudioData);
+          startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
         }).catch((error) => {
           console.error("Error accessing microphone", error);
         })
@@ -104,7 +106,7 @@ export const App: React.FC = () => {
 
       await accessFileStream(audioContext.current, file)
         .then((sourceNode) => {
-          startAnalyzer(audioContext.current, sourceNode, setAudioData);
+          startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
         }).catch((error) => {
           console.error("Error accessing audio file", error);
         })
@@ -309,14 +311,16 @@ export const App: React.FC = () => {
     audioContext.current.resume();
     // meydaAnalyzer?.start(); //Stopping analyzer on suspend results in multiple analyzers running
     setIsFilePlaying(true);
+  }
 
+  const updateAppOptions = (newOptions: AppOptions) => {
+    setAppOptions(newOptions);
   }
 
   useEffect(() => {
-    averageTicksRef.current = appOptions.averageTicks;
-    dataLengthRef.current = appOptions.dataLength;
-
-  }, [appOptions.averageTicks, appOptions.dataLength]);
+    appOptionsRef.current.averageTicks = appOptions.averageTicks;
+    appOptionsRef.current.dataLength = appOptions.dataLength;
+  }, [appOptions.averageTicks, appOptions.dataLength])
 
   return (
     <div className='container'>
