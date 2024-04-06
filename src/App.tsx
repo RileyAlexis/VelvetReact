@@ -286,10 +286,12 @@ export const App: React.FC = () => {
     setIsFilePlaying(true);
   }
 
+  //Cannot use the entire object - each value must be specified or it will not update
+  //because react is ornery
   useEffect(() => {
     appOptionsRef.current.averageTicks = appOptions.averageTicks;
     appOptionsRef.current.dataLength = appOptions.dataLength;
-  }, [appOptions.averageTicks, appOptions.dataLength])
+  }, [appOptions]);
 
   return (
     <div className='container'>

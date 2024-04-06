@@ -61,7 +61,6 @@ export const startAnalyzer = async (
                 if (smallFormantArray.length >= appOptions.dataLength) {
                     smallFormantArray = smallFormantArray.slice(-appOptions.dataLength);
                 }
-
                 const newYinArray = movingWindowFilter(smallYinArray, appOptions.averageTicks);
                 const newFormantArray = movingWindowFilter(smallFormantArray, appOptions.averageTicks);
                 setAudioData({ yinFrequency: newYinArray, formantFrequency: newFormantArray });
@@ -69,6 +68,7 @@ export const startAnalyzer = async (
         });
 
         analyzer.start();
+        // analyzer.setSource()
 
         // else if audio source is file
     } else if (isAudioBufferSourceNode(source)) {
