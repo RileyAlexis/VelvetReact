@@ -9,27 +9,14 @@ function isAudioBufferSourceNode(node: any): node is AudioBufferSourceNode {
     return node instanceof AudioBufferSourceNode;
 }
 
-const setNewAudioValues = (
-    audioData: AudioData, yinValue: number, formantValue: number): AudioData => {
-    const newYinArray = [...audioData.yinFrequency, yinValue];
-    const newFormantArray = [...audioData.formantFrequency, formantValue];
-
-    if (newYinArray.length > 20000) {
-        newYinArray.splice(0, newYinArray.length - 20000);
-    }
-
-    if (newFormantArray.length > 20000) {
-        newFormantArray.splice(0, newFormantArray.length - 20000);
-    }
-    return { yinFrequency: newYinArray, formantFrequency: newFormantArray }
-}
-
-
 export const startAnalyzer = async (
     audioContext: AudioContext,
     source: MediaStreamAudioSourceNode | AudioBufferSourceNode,
     setAudioData: Function
 ): Promise<void> => {
+
+    let smallYinArray = [];
+    let smallFormantArray = [];
 
     //if audio source is mic
     if (!isAudioBufferSourceNode(source)) {
@@ -58,9 +45,19 @@ export const startAnalyzer = async (
             callback: (features: Meyda.MeydaFeaturesObject) => {
 
                 const dataArray = new Float32Array(features.buffer);
-                const yinValue = yin(dataArray, audioContext.sampleRate, 0.05);
-                const formantValue = calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.sampleRate);
-                setAudioData((prevAudioData: AudioData) => setNewAudioValues(prevAudioData, yinValue, formantValue));
+                smallYinArray.push(yin(dataArray, audioContext.sampleRate, 0.05));
+                smallFormantArray.push(calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.sampleRate));
+
+                if (smallYinArray.length >= 500) {
+                    smallYinArray = smallYinArray.slice(-500);
+                }
+                if (smallFormantArray.length >= 500) {
+                    smallFormantArray = smallFormantArray.slice(-500);
+                }
+
+                const newYinArray = movingWindowFilter(smallYinArray, 30);
+                const newFormantArray = movingWindowFilter(smallFormantArray, 30);
+                setAudioData({ yinFrequency: newYinArray, formantFrequency: newFormantArray });
             }
         });
 
