@@ -48,7 +48,6 @@ export const startAnalyzer = async (
                 const dataArray = new Float32Array(features.buffer);
                 const yinValue = yin(dataArray, audioContext.sampleRate, 0.05);
 
-                console.log(appOptions.dataLength);
                 if (yinValue) {
                     smallYinArray.push(yinValue);
                 }

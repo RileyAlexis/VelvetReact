@@ -1,6 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import meyda from 'meyda';
-import { yin } from './modules/yinIFFEE.js';
+import React, { useState, useRef, useEffect } from 'react'
 
 //Material UI
 // import { useMediaQuery } from "@mui/material";
@@ -8,7 +6,6 @@ import { yin } from './modules/yinIFFEE.js';
 import './App.css'
 
 //Types
-import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 import { AudioData } from './interfaces';
 
 //Components
@@ -16,9 +13,6 @@ import { SpectralPlot } from './components/SpectralPlot';
 import { BottomNav } from './components/BottomNav';
 
 //Modules
-import { calculateFirstFormantFrequency } from './modules/audioProcesses.js';
-import { movingWindowFilter } from './modules/audioProcesses.js';
-import { normalizeSpectralCentroid } from './modules/audioProcesses.js';
 import { accessMic, accessFileStream } from './modules/audioSources.js';
 import { startAnalyzer } from './modules/startAnalyzer.js';
 
@@ -28,19 +22,11 @@ import { AppOptions } from './interfaces';
 
 export const App: React.FC = () => {
   const audioContext = useRef<AudioContext | null>(null);
-  const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | AudioBufferSourceNode | null>(null);
-  const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [isMicOn, setIsMicOn] = useState<boolean>(false);
   const [isFilePlaying, setIsFilePlaying] = useState<boolean>(false);
   const [isEnded, setIsEnded] = useState<boolean>(false);
-
-  const [rmsArray, setRmsArray] = useState<number[]>([]);
-  const [spectralArray, setSpectralArray] = useState<number[]>([]);
-  const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
-  const [formantFrequencyArray, setFormantFrequencyArray] = useState<number[]>([]);
-  const [yinFrequencyArray, setYinFrequencyArray] = useState<number[]>([]);
 
   // const isSmallScreen = useMediaQuery("(max-width: 600px)");
 
@@ -61,25 +47,12 @@ export const App: React.FC = () => {
   });
 
   const appOptionsRef = useRef<AppOptions>(appOptions);
+  const micOnRef = useRef<boolean>(false);
 
   const [audioData, setAudioData] = useState<AudioData>({
     yinFrequency: [],
     formantFrequency: [],
   });
-
-  const averageTicksRef = useRef<number>(appOptions.averageTicks);
-  const dataLengthRef = useRef<number>(appOptions.dataLength);
-  const micOnRef = useRef<boolean>(false);
-  const audioFileRef = useRef<File>(null);
-
-
-  let rmsSmall: number[] = [];
-  let spectralSmall: number[] = [];
-  let perceptualSpreadSmall: number[] = [];
-  let yinFrequencySmall: number[] = [];
-  let formantFrequencySmall: number[] = [];
-
-  // const amplitudeSpectrumRef = useRef(amplitudeSpectrum);
 
   const startRecording = async () => {
     if (!audioContext.current) {
@@ -311,10 +284,6 @@ export const App: React.FC = () => {
     audioContext.current.resume();
     // meydaAnalyzer?.start(); //Stopping analyzer on suspend results in multiple analyzers running
     setIsFilePlaying(true);
-  }
-
-  const updateAppOptions = (newOptions: AppOptions) => {
-    setAppOptions(newOptions);
   }
 
   useEffect(() => {
