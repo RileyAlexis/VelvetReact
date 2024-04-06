@@ -19,6 +19,29 @@ export const startAnalyzer = async (
     let smallYinArray = [];
     let smallFormantArray = [];
 
+    //This is the meyda callback funtion that processes data from meyda festures
+    const analyzeAudioSignal = (features: Meyda.MeydaFeaturesObject) => {
+        const dataArray = new Float32Array(features.buffer);
+        const yinValue = yin(dataArray, audioContext.sampleRate, 0.05);
+
+        if (yinValue) {
+            smallYinArray.push(yinValue);
+        }
+        const formantValue = calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.sampleRate);
+        if (formantValue) {
+            smallFormantArray.push(formantValue);
+        }
+        if (smallYinArray.length >= appOptions.dataLength) {
+            smallYinArray = smallYinArray.slice(-appOptions.dataLength);
+        }
+        if (smallFormantArray.length >= appOptions.dataLength) {
+            smallFormantArray = smallFormantArray.slice(-appOptions.dataLength);
+        }
+        const newYinArray = movingWindowFilter(smallYinArray, appOptions.averageTicks);
+        const newFormantArray = movingWindowFilter(smallFormantArray, appOptions.averageTicks);
+        setAudioData({ yinFrequency: newYinArray, formantFrequency: newFormantArray });
+    }
+
     //if audio source is mic
     if (!isAudioBufferSourceNode(source)) {
         //Mic analysis code
@@ -44,26 +67,7 @@ export const startAnalyzer = async (
             bufferSize: 4096,
             featureExtractors: ['buffer', 'amplitudeSpectrum', 'mfcc'],
             callback: (features: Meyda.MeydaFeaturesObject) => {
-
-                const dataArray = new Float32Array(features.buffer);
-                const yinValue = yin(dataArray, audioContext.sampleRate, 0.05);
-
-                if (yinValue) {
-                    smallYinArray.push(yinValue);
-                }
-                const formantValue = calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.sampleRate);
-                if (formantValue) {
-                    smallFormantArray.push(formantValue);
-                }
-                if (smallYinArray.length >= appOptions.dataLength) {
-                    smallYinArray = smallYinArray.slice(-appOptions.dataLength);
-                }
-                if (smallFormantArray.length >= appOptions.dataLength) {
-                    smallFormantArray = smallFormantArray.slice(-appOptions.dataLength);
-                }
-                const newYinArray = movingWindowFilter(smallYinArray, appOptions.averageTicks);
-                const newFormantArray = movingWindowFilter(smallFormantArray, appOptions.averageTicks);
-                setAudioData({ yinFrequency: newYinArray, formantFrequency: newFormantArray });
+                analyzeAudioSignal(features);
             }
         });
 
