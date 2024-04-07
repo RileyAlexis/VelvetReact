@@ -14,7 +14,7 @@ import { BottomNav } from './components/BottomNav';
 
 //Modules
 import { accessMic, stopMicStream, accessFileStream } from './modules/audioSources.js';
-import { startAnalyzer } from './modules/startAnalyzer.js';
+import { startAnalyzer, callStopAnalyzer } from './modules/startAnalyzer.js';
 
 //Interfaces
 import { AppOptions } from './interfaces';
@@ -43,7 +43,7 @@ export const App: React.FC = () => {
     colorYin: '#7ee86d',
     showFirstFormant: true,
     colorFirstFormant: '#520477',
-    dataLength: 500,
+    dataLength: 250,
   });
 
   const appOptionsRef = useRef<AppOptions>(appOptions);
@@ -92,6 +92,7 @@ export const App: React.FC = () => {
     setIsMicOn(false);
     await audioContext.current.suspend();
     stopMicStream();
+    callStopAnalyzer();
   }
 
   const startFileAnalyzing = async (file: File) => {

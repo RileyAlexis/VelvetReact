@@ -5,6 +5,9 @@ import { yin } from '../modules/yinIFFEE';
 
 import { AppOptions, AudioData } from "../interfaces"
 
+let stopMeydaAnalyzer: (() => void) | null = null;
+
+
 function isAudioBufferSourceNode(node: any): node is AudioBufferSourceNode {
     return node instanceof AudioBufferSourceNode;
 }
@@ -24,6 +27,7 @@ export const startAnalyzer = async (
     setAudioData: Function,
     appOptions: AppOptions,
 ): Promise<void> => {
+
 
     let smallYinArray = [];
     let averageYinArray = [];
@@ -95,11 +99,16 @@ export const startAnalyzer = async (
         analyzer.start();
         // analyzer.setSource()
 
+        stopMeydaAnalyzer = () => {
+            analyzer.stop();
+        }
+
         // else if audio source is file
     } else if (isAudioBufferSourceNode(source)) {
         //File analysis code
     } //end isAudioBufferSourceNode else if statement
+}
 
-
-
+export const callStopAnalyzer = () => {
+    stopMeydaAnalyzer();
 }
