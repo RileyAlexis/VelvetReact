@@ -9,6 +9,7 @@ function isAudioBufferSourceNode(node: any): node is AudioBufferSourceNode {
     return node instanceof AudioBufferSourceNode;
 }
 
+//Supplies session averages displayed on the plot
 function calculateAverage(numbers: number[]): number {
     if (numbers.length === 0) {
         return 0;

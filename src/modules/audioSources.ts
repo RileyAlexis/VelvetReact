@@ -1,20 +1,37 @@
-export const accessMic =
-    (audioContext: AudioContext): Promise<MediaStreamAudioSourceNode> => {
+let stopMic: (() => void) | null = null;
 
-        return new Promise<MediaStreamAudioSourceNode>((resolve, reject) => {
+export const accessMic = (audioContext: AudioContext):
+    Promise<MediaStreamAudioSourceNode> => {
 
-            navigator.mediaDevices.getUserMedia({ audio: true })
+    return new Promise<MediaStreamAudioSourceNode>((resolve, reject) => {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then((stream) => {
+                const source = new MediaStreamAudioSourceNode(audioContext, {
+                    mediaStream: stream
+                });
 
-                .then((stream) => {
-                    const source = new MediaStreamAudioSourceNode(audioContext, {
-                        mediaStream: stream
-                    })
-                    resolve(source);
-                }).catch((error) => {
-                    reject(error);
-                })
-        })
+                stopMic = () => {
+                    console.log('Stop Stream Called');
+                    stream.getTracks().forEach((track) => {
+                        track.stop();
+                    });
+                    stopMic = null;
+                };
+
+                resolve(source);
+            }).catch((error) => {
+                reject(error);
+            });
+    });
+}
+
+export const stopMicStream = () => {
+    if (stopMic) {
+        stopMic();
     }
+}
+
+
 
 export const accessFileStream =
     (audioContext: AudioContext, audioFile: File): Promise<AudioBufferSourceNode> => {

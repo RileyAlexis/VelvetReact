@@ -13,7 +13,7 @@ import { SpectralPlot } from './components/SpectralPlot';
 import { BottomNav } from './components/BottomNav';
 
 //Modules
-import { accessMic, accessFileStream } from './modules/audioSources.js';
+import { accessMic, stopMicStream, accessFileStream } from './modules/audioSources.js';
 import { startAnalyzer } from './modules/startAnalyzer.js';
 
 //Interfaces
@@ -28,6 +28,7 @@ export const App: React.FC = () => {
   const [isFilePlaying, setIsFilePlaying] = useState<boolean>(false);
   const [isEnded, setIsEnded] = useState<boolean>(false);
 
+  const [sourceNode, setSourceNode] = useState<MediaStreamAudioSourceNode | AudioBufferSourceNode | null>(null);
   // const isSmallScreen = useMediaQuery("(max-width: 600px)");
 
   const [appOptions, setAppOptions] = useState<AppOptions>({
@@ -62,15 +63,22 @@ export const App: React.FC = () => {
         latencyHint: "interactive"
       });
       setIsRecording(true);
-      micOnRef.current = true;
       setIsMicOn(true);
       await accessMic(audioContext.current)
         .then((sourceNode) => {
           startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
         }).catch((error) => {
           console.error("Error accessing microphone", error);
-        })
+        });
     }
+  }
+
+  const stopRecording = async () => {
+    if (!audioContext.current) return;
+    if (audioContext.current.state !== 'running') return;
+    setIsMicOn(false);
+    await audioContext.current.suspend();
+    stopMicStream();
   }
 
   const startFileAnalyzing = async (file: File) => {
@@ -277,9 +285,7 @@ export const App: React.FC = () => {
 
   const handlePause = () => {
 
-    audioContext.current.suspend();
-    // meydaAnalyzer?.stop(); //Stopping analyzer on suspend results in multiple analyzers running
-    setIsFilePlaying(false);
+    stopRecording();
   }
 
   const handleResume = () => {
@@ -293,7 +299,8 @@ export const App: React.FC = () => {
   useEffect(() => {
     appOptionsRef.current.averageTicks = appOptions.averageTicks;
     appOptionsRef.current.dataLength = appOptions.dataLength;
-  }, [appOptions]);
+    micOnRef.current = isMicOn;
+  }, [appOptions, isMicOn]);
 
   return (
     <div className='container'>

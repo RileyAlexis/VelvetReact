@@ -30,7 +30,6 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
 
         useEffect(() => {
             if (audioData === undefined) return;
-            console.log(audioData.averageYin);
             const plot = Plot.plot({
                 marginTop: 5,
                 marginLeft: 30,
