@@ -28,7 +28,6 @@ export const App: React.FC = () => {
   const [isFilePlaying, setIsFilePlaying] = useState<boolean>(false);
   const [isEnded, setIsEnded] = useState<boolean>(false);
 
-  const [sourceNode, setSourceNode] = useState<MediaStreamAudioSourceNode | AudioBufferSourceNode | null>(null);
   // const isSmallScreen = useMediaQuery("(max-width: 600px)");
 
   const [appOptions, setAppOptions] = useState<AppOptions>({
@@ -62,10 +61,23 @@ export const App: React.FC = () => {
       audioContext.current = new AudioContext({
         latencyHint: "interactive"
       });
+
       setIsRecording(true);
       setIsMicOn(true);
       await accessMic(audioContext.current)
         .then((sourceNode) => {
+          console.log(sourceNode);
+          startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
+        }).catch((error) => {
+          console.error("Error accessing microphone", error);
+        });
+    } else {
+      audioContext.current.resume();
+      setIsRecording(true);
+      setIsMicOn(true);
+      await accessMic(audioContext.current)
+        .then((sourceNode) => {
+          console.log(sourceNode);
           startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
         }).catch((error) => {
           console.error("Error accessing microphone", error);
@@ -76,6 +88,7 @@ export const App: React.FC = () => {
   const stopRecording = async () => {
     if (!audioContext.current) return;
     if (audioContext.current.state !== 'running') return;
+
     setIsMicOn(false);
     await audioContext.current.suspend();
     stopMicStream();

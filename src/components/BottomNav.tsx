@@ -67,6 +67,7 @@ export const BottomNav: React.FC<BottomNavProps> =
         };
 
         const handleMicToggle = () => {
+            console.log('isMicOn', isMicOn);
             if (!isMicOn) {
                 setShowPlayPause(false);
                 startRecording();
