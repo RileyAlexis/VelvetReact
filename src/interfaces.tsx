@@ -16,5 +16,7 @@ export interface AppOptions {
 
 export interface AudioData {
     formantFrequency: number[],
+    averageFormant: number,
     yinFrequency: number[],
+    averageYin: number
 }

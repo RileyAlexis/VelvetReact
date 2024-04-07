@@ -51,7 +51,9 @@ export const App: React.FC = () => {
 
   const [audioData, setAudioData] = useState<AudioData>({
     yinFrequency: [],
+    averageYin: 0,
     formantFrequency: [],
+    averageFormant: 0
   });
 
   const startRecording = async () => {

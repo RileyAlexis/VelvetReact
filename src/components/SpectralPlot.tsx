@@ -30,7 +30,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
 
         useEffect(() => {
             if (audioData === undefined) return;
-
+            console.log(audioData.averageYin);
             const plot = Plot.plot({
                 marginTop: 5,
                 marginLeft: 30,
@@ -58,7 +58,34 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                         Plot.lineY(audioData.formantFrequency, {
                             curve: "natural",
                             stroke: appOptions.colorFirstFormant,
-                        }) : null
+                        }) : null,
+
+                    audioData.averageYin > 0 ?
+                        Plot.text([0, 0], {
+                            text: ["Avg Base\n\n", audioData.averageYin],
+                            dx: -50,
+                            dy: 200,
+                            frameAnchor: "right",
+                            textAnchor: "middle",
+                            lineAnchor: "middle",
+
+                            fill: appOptions.colorYin, fontSize: 20
+
+                        }) : null,
+
+                    audioData.averageFormant > 0 ?
+                        Plot.text([0, 0], {
+                            text: ["Avg Formant\n\n", audioData.averageFormant],
+                            dx: -60,
+                            dy: -150,
+                            frameAnchor: "right",
+                            textAnchor: "middle",
+                            lineAnchor: "middle",
+                            fill: appOptions.colorFirstFormant, fontSize: 20,
+                        }) : null,
+
+
+                    // Plot.text([[-0.5, 4]], { text: ["Southbound"], textAnchor: "end", dx: -16 }),
                 ],
                 width: width,
                 height: height,

@@ -9,6 +9,14 @@ function isAudioBufferSourceNode(node: any): node is AudioBufferSourceNode {
     return node instanceof AudioBufferSourceNode;
 }
 
+function calculateAverage(numbers: number[]): number {
+    if (numbers.length === 0) {
+        return 0;
+    }
+    const sum = numbers.reduce((acc, curr) => acc + curr, 0);
+    return sum / numbers.length;
+}
+
 export const startAnalyzer = async (
     audioContext: AudioContext,
     source: MediaStreamAudioSourceNode | AudioBufferSourceNode,
@@ -17,7 +25,9 @@ export const startAnalyzer = async (
 ): Promise<void> => {
 
     let smallYinArray = [];
+    let averageYinArray = [];
     let smallFormantArray = [];
+    let averageFormantArray = [];
 
     //This is the meyda callback funtion that processes data from meyda festures
     const analyzeAudioSignal = (features: Meyda.MeydaFeaturesObject) => {
@@ -26,10 +36,12 @@ export const startAnalyzer = async (
 
         if (yinValue) {
             smallYinArray.push(yinValue);
+            averageYinArray.push(yinValue);
         }
         const formantValue = calculateFirstFormantFrequency(features.amplitudeSpectrum, audioContext.sampleRate);
         if (formantValue) {
             smallFormantArray.push(formantValue);
+            averageFormantArray.push(formantValue);
         }
         if (smallYinArray.length >= appOptions.dataLength) {
             smallYinArray = smallYinArray.slice(-appOptions.dataLength);
@@ -39,7 +51,15 @@ export const startAnalyzer = async (
         }
         const newYinArray = movingWindowFilter(smallYinArray, appOptions.averageTicks);
         const newFormantArray = movingWindowFilter(smallFormantArray, appOptions.averageTicks);
-        setAudioData({ yinFrequency: newYinArray, formantFrequency: newFormantArray });
+        const runningYinAvg = calculateAverage(averageYinArray);
+        const runningFormant = calculateAverage(averageFormantArray);
+
+        setAudioData({
+            yinFrequency: newYinArray,
+            averageYin: runningYinAvg,
+            formantFrequency: newFormantArray,
+            averageFormant: runningFormant
+        });
     }
 
     //if audio source is mic
