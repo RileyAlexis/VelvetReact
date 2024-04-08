@@ -104,6 +104,8 @@ export const startAnalyzer = async (
 
         stopMeydaAnalyzer = () => {
             analyzer.stop();
+            lowpass.disconnect();
+            highpass.disconnect();
         }
 
         // else if audio source is file
@@ -151,10 +153,10 @@ export const startAnalyzer = async (
             }
             console.log('Ended event triggered');
             callStopAnalyzer();
-            await audioContext.suspend();
             fftAnalyzer.disconnect();
             lowpass.disconnect();
             highpass.disconnect();
+            await audioContext.suspend();
 
         });
 
