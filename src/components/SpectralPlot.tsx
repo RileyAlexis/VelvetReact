@@ -1,20 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as Plot from '@observablehq/plot';
-import { AppOptions } from '../interfaces';
+import { AppOptions, AudioData } from '../interfaces';
 
 interface SpectralChartProps {
     appOptions: AppOptions,
-    spectralArray: number[],
-    rmsArray: number[],
-    perceptualSpreadArray: number[],
-    yinFrequencyArray: number[],
-    formantFrequencyArray: number[]
+    audioData: AudioData
 }
 
 
 export const SpectralPlot: React.FC<SpectralChartProps> =
-    ({ appOptions, spectralArray, rmsArray, perceptualSpreadArray,
-        yinFrequencyArray, formantFrequencyArray }) => {
+    ({ appOptions, audioData }) => {
 
         const plotRef = useRef<HTMLDivElement | null>(null);
         const width: number = window.innerWidth - 50;
@@ -31,11 +26,10 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
             // console.log(perceptualSpreadArray.length);
             // console.log(powerSpectrumArray);
             // console.log(yinFrequencyArray);
-        }, [yinFrequencyArray])
+        }, [])
 
         useEffect(() => {
-            if (spectralArray === undefined) return;
-
+            if (audioData === undefined) return;
             const plot = Plot.plot({
                 marginTop: 5,
                 marginLeft: 30,
@@ -54,35 +48,43 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
                     Plot.frame(),
 
                     appOptions.showYin ?
-                        Plot.lineY(yinFrequencyArray, {
+                        Plot.lineY(audioData.yinFrequency, {
                             curve: "natural",
                             stroke: appOptions.colorYin,
                         }) : null,
 
                     appOptions.showFirstFormant ?
-                        Plot.lineY(formantFrequencyArray, {
+                        Plot.lineY(audioData.formantFrequency, {
                             curve: "natural",
                             stroke: appOptions.colorFirstFormant,
                         }) : null,
 
-                    appOptions.showPerceptual ?
-                        Plot.lineY(perceptualSpreadArray, {
-                            curve: "natural",
-                            stroke: appOptions.colorPerceptual,
+                    audioData.averageYin > 0 ?
+                        Plot.text([0, 0], {
+                            text: ["Avg Base\n\n", audioData.averageYin],
+                            dx: -50,
+                            dy: 200,
+                            frameAnchor: "right",
+                            textAnchor: "middle",
+                            lineAnchor: "middle",
+
+                            fill: appOptions.colorYin, fontSize: 20
+
                         }) : null,
 
-                    appOptions.showSpectral ?
-                        Plot.lineY(spectralArray, {
-                            curve: "natural",
-                            stroke: appOptions.colorSpectral,
+                    audioData.averageFormant > 0 ?
+                        Plot.text([0, 0], {
+                            text: ["Avg Formant\n\n", audioData.averageFormant],
+                            dx: -60,
+                            dy: -150,
+                            frameAnchor: "right",
+                            textAnchor: "middle",
+                            lineAnchor: "middle",
+                            fill: appOptions.colorFirstFormant, fontSize: 20,
                         }) : null,
 
-                    appOptions.showRms ?
-                        Plot.lineY(rmsArray, {
-                            curve: "natural",
-                            stroke: appOptions.colorRms,
-                        }) : null,
 
+                    // Plot.text([[-0.5, 4]], { text: ["Southbound"], textAnchor: "end", dx: -16 }),
                 ],
                 width: width,
                 height: height,
@@ -91,7 +93,7 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
             plotRef.current.append(plot);
 
             return () => plot.remove();
-        }, [spectralArray]);
+        }, [audioData]);
 
         return (
             <div className='plotBox'>
