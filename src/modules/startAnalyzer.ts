@@ -3,7 +3,7 @@ import meyda from 'meyda';
 import { calculateFirstFormantFrequency, movingWindowFilter } from './audioProcesses';
 import { yin } from '../modules/yinIFFEE';
 
-import { AppOptions, AudioData } from "../interfaces"
+import { AppOptions } from "../interfaces"
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 
 let stopMeydaAnalyzer: (() => void) | null = null;
