@@ -31,8 +31,6 @@ export const stopMicStream = () => {
     }
 }
 
-
-
 export const accessFileStream =
     (audioContext: AudioContext, audioFile: File): Promise<AudioBufferSourceNode> => {
 

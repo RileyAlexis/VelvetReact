@@ -4,8 +4,11 @@ import { calculateFirstFormantFrequency, movingWindowFilter } from './audioProce
 import { yin } from '../modules/yinIFFEE';
 
 import { AppOptions, AudioData } from "../interfaces"
+import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
 
 let stopMeydaAnalyzer: (() => void) | null = null;
+let stopMeydaFileAnalyzer: (() => void) | null = null;
+
 
 
 function isAudioBufferSourceNode(node: any): node is AudioBufferSourceNode {
@@ -86,7 +89,7 @@ export const startAnalyzer = async (
 
         //Create meyda Analyzer - provides processing and callback function
         //for audio analysis
-        const analyzer = meyda.createMeydaAnalyzer({
+        const analyzer: MeydaAnalyzer = meyda.createMeydaAnalyzer({
             audioContext: audioContext,
             source: highpass,
             bufferSize: 4096,
@@ -103,12 +106,62 @@ export const startAnalyzer = async (
             analyzer.stop();
         }
 
-        // else if audio source is file
+        // else if audio source is fil
     } else if (isAudioBufferSourceNode(source)) {
         //File analysis code
+        source.connect(audioContext.destination);
+        source.start();
+
+        source.addEventListener('ended', async () => {
+            const handleFileEnd = () => {
+                source.removeEventListener('ended', handleFileEnd);
+            }
+            console.log('Ended event triggered');
+
+        });
+
+        const lowpass = audioContext.createBiquadFilter();
+        lowpass.type = 'lowpass';
+        lowpass.frequency.value = 300; // Set the cutoff frequency
+        lowpass.Q.value = 1;
+
+        const highpass = audioContext.createBiquadFilter();
+        highpass.type = 'highpass';
+        highpass.frequency.value = 60;
+
+        //Connect high and lowpass filters to audio node
+        source.connect(lowpass);
+        lowpass.connect(highpass);
+
+        const fftAnalyzer = audioContext.createAnalyser();
+        fftAnalyzer.fftSize = 4096;
+        highpass.connect(fftAnalyzer);
+
+
+        const fileMeydaAnalyzer: MeydaAnalyzer = meyda.createMeydaAnalyzer({
+            audioContext: audioContext,
+            source: fftAnalyzer,
+            bufferSize: 4096,
+            featureExtractors: ['buffer', 'amplitudeSpectrum'],
+            callback: (features: Meyda.MeydaFeaturesObject) => {
+                analyzeAudioSignal(features);
+            }
+        });
+
+        fileMeydaAnalyzer.start();
+
+        stopMeydaAnalyzer = () => {
+            fileMeydaAnalyzer.stop();
+        }
+
+
     } //end isAudioBufferSourceNode else if statement
 }
 
 export const callStopAnalyzer = () => {
     stopMeydaAnalyzer();
+}
+
+export const callStopFileAnalyzer = () => {
+    stopMeydaFileAnalyzer();
 }

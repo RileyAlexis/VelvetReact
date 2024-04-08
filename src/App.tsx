@@ -153,40 +153,40 @@ export const App: React.FC = () => {
   //     }
 
   //     console.log('Audio File', audioFile);
-  //     // const arrayBuffer = await audioFile.arrayBuffer();
-  //     // const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
+  // const arrayBuffer = await audioFile.arrayBuffer();
+  // const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
 
-  //     // source = audioContext.current.createBufferSource();
-  //     // source.buffer = audioBuffer;
+  // source = audioContext.current.createBufferSource();
+  // source.buffer = audioBuffer;
 
-  //     // Placing the connect here skips the high and low pass filters for playing
-  //     // the audio through the speakers. Filters are still applied to the data display.
-  //     // Audio sounds muffled when run through the filters.
-  //     // if (audioFile) {
-  //     //   source.connect(audioContext.current.destination);
-  //     //   source?.start();
-  //     // }
+  // Placing the connect here skips the high and low pass filters for playing
+  // the audio through the speakers. Filters are still applied to the data display.
+  // Audio sounds muffled when run through the filters.
+  // if (audioFile) {
+  //   source.connect(audioContext.current.destination);
+  //   source?.start();
+  // }
 
-  //     // useEffect(() => {
-  //     //   const handleFileEnd = () => {
-  //     //     console.log('File end event triggered');
-  //     //     source.removeEventListener('ended', handleFileEnd);
-  //     //   }
+  // useEffect(() => {
+  //   const handleFileEnd = () => {
+  //     console.log('File end event triggered');
+  //     source.removeEventListener('ended', handleFileEnd);
+  //   }
 
-  //     //   source.addEventListener('ended', async () => {
-  //     //     console.log('Ended event triggered');
-  //     //     await audioContext.current!.suspend();
-  //     //     setIsRecording(false);
-  //     //     setIsEnded(true);
-  //     //     setIsFilePlaying(false);
-  //     //     analyzer?.stop();
-  //     //     audioContext.current = null;
-  //     //   });
+  //   source.addEventListener('ended', async () => {
+  //     console.log('Ended event triggered');
+  //     await audioContext.current!.suspend();
+  //     setIsRecording(false);
+  //     setIsEnded(true);
+  //     setIsFilePlaying(false);
+  //     analyzer?.stop();
+  //     audioContext.current = null;
+  //   });
 
-  //     //   return () => {
-  //     //     source.removeEventListener('ended', handleFileEnd);
-  //     //   }
-  //     // })
+  //   return () => {
+  //     source.removeEventListener('ended', handleFileEnd);
+  //   }
+  // })
 
 
   //     //Set low pass filter to reduce noise
