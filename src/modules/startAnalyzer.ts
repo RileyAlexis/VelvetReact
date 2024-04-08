@@ -38,7 +38,7 @@ export const startAnalyzer = async (
     let averageFormantArray = [];
 
     //This is the meyda callback funtion that processes data from meyda festures
-    const analyzeAudioSignal = (features: Meyda.MeydaFeaturesObject) => {
+    const analyzeAudioSignal = (features: Meyda.MeydaFeaturesObject): void => {
         const dataArray = new Float32Array(features.buffer);
         const yinValue = yin(dataArray, audioContext.sampleRate, 0.05);
 
@@ -74,12 +74,12 @@ export const startAnalyzer = async (
     if (!isAudioBufferSourceNode(source)) {
         //Mic analysis code
         //Set low pass filter to reduce noise
-        const lowpass = audioContext.createBiquadFilter();
+        const lowpass: BiquadFilterNode = audioContext.createBiquadFilter();
         lowpass.type = 'lowpass';
         lowpass.frequency.value = 300; // Set the cutoff frequency
         lowpass.Q.value = 1;
 
-        const highpass = audioContext.createBiquadFilter();
+        const highpass: BiquadFilterNode = audioContext.createBiquadFilter();
         highpass.type = 'highpass';
         highpass.frequency.value = 60;
 
@@ -106,26 +106,17 @@ export const startAnalyzer = async (
             analyzer.stop();
         }
 
-        // else if audio source is fil
+        // else if audio source is file
     } else if (isAudioBufferSourceNode(source)) {
         //File analysis code
         source.connect(audioContext.destination);
-        source.start();
 
-        source.addEventListener('ended', async () => {
-            const handleFileEnd = () => {
-                source.removeEventListener('ended', handleFileEnd);
-            }
-            console.log('Ended event triggered');
-
-        });
-
-        const lowpass = audioContext.createBiquadFilter();
+        const lowpass: BiquadFilterNode = audioContext.createBiquadFilter();
         lowpass.type = 'lowpass';
         lowpass.frequency.value = 300; // Set the cutoff frequency
         lowpass.Q.value = 1;
 
-        const highpass = audioContext.createBiquadFilter();
+        const highpass: BiquadFilterNode = audioContext.createBiquadFilter();
         highpass.type = 'highpass';
         highpass.frequency.value = 60;
 
@@ -136,7 +127,7 @@ export const startAnalyzer = async (
         const fftAnalyzer = audioContext.createAnalyser();
         fftAnalyzer.fftSize = 4096;
         highpass.connect(fftAnalyzer);
-
+        source.start();
 
         const fileMeydaAnalyzer: MeydaAnalyzer = meyda.createMeydaAnalyzer({
             audioContext: audioContext,
@@ -153,6 +144,19 @@ export const startAnalyzer = async (
         stopMeydaAnalyzer = () => {
             fileMeydaAnalyzer.stop();
         }
+
+        source.addEventListener('ended', async () => {
+            const handleFileEnd = () => {
+                source.removeEventListener('ended', handleFileEnd);
+            }
+            console.log('Ended event triggered');
+            callStopAnalyzer();
+            await audioContext.suspend();
+            fftAnalyzer.disconnect();
+            lowpass.disconnect();
+            highpass.disconnect();
+
+        });
 
 
     } //end isAudioBufferSourceNode else if statement

@@ -107,7 +107,6 @@ export const App: React.FC = () => {
         }).catch((error) => {
           console.error("Error accessing audio file", error);
         })
-
     }
   }
 
@@ -298,7 +297,6 @@ export const App: React.FC = () => {
   // };
 
   const handlePause = () => {
-
     stopRecording();
   }
 
