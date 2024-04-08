@@ -21,7 +21,8 @@ interface BottomNavProps {
     appOptions: AppOptions,
     setAppOptions: Function,
     isMicOn: boolean,
-    handlePause: Function,
+    handleMicPause: Function,
+    handleFilePause: Function,
     handleResume: Function,
     isEnded: boolean,
     setIsEnded: Function,
@@ -35,7 +36,8 @@ export const BottomNav: React.FC<BottomNavProps> =
         appOptions,
         setAppOptions,
         isMicOn,
-        handlePause,
+        handleMicPause,
+        handleFilePause,
         handleResume,
         isEnded,
         setIsEnded,
@@ -72,7 +74,7 @@ export const BottomNav: React.FC<BottomNavProps> =
                 setShowPlayPause(false);
                 startRecording();
             } else {
-                handlePause();
+                handleMicPause();
             }
         };
 
@@ -100,7 +102,7 @@ export const BottomNav: React.FC<BottomNavProps> =
             setIsPlaying(!isPlaying);
 
             if (isPlaying && isFilePlaying) {
-                handlePause();
+                handleFilePause();
             } else if (!isPlaying && !isFilePlaying) {
                 handleResume();
             } else if (isEnded) {

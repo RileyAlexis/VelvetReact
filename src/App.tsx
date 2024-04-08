@@ -107,14 +107,19 @@ export const App: React.FC = () => {
     await accessFileStream(audioContext.current, file)
       .then((sourceNode) => {
         startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
+        setIsFilePlaying(true);
       }).catch((error) => {
         console.error("Error accessing audio file", error);
       })
-
   }
 
-  const handlePause = () => {
+  const handleMicPause = () => {
     stopRecording();
+  }
+
+  const handleFilePause = () => {
+    audioContext.current.suspend();
+    setIsFilePlaying(false);
   }
 
   const handleResume = () => {
@@ -151,7 +156,8 @@ export const App: React.FC = () => {
           appOptions={appOptions}
           setAppOptions={setAppOptions}
           isMicOn={isMicOn}
-          handlePause={handlePause}
+          handleMicPause={handleMicPause}
+          handleFilePause={handleFilePause}
           handleResume={handleResume}
           isEnded={isEnded}
           setIsEnded={setIsEnded}
