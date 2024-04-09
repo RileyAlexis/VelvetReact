@@ -165,7 +165,9 @@ export const startAnalyzer = async (
             fftAnalyzer.disconnect();
             lowpass.disconnect();
             highpass.disconnect();
-            await audioContext.suspend();
+            if (audioContext.state === 'running') {
+                await audioContext.suspend();
+            }
 
         });
 

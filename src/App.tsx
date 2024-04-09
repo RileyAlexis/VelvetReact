@@ -57,32 +57,28 @@ export const App: React.FC = () => {
   });
 
   const startRecording = async () => {
-    if (!audioContext.current) {
+    console.log(audioContext.current);
+    if (!audioContext.current || audioContext.current.state === 'closed') {
+      console.log('Creating new context for mic');
       audioContext.current = new AudioContext({
         latencyHint: "interactive"
       });
-
-      setIsRecording(true);
-      setIsMicOn(true);
-      await accessMic(audioContext.current)
-        .then((sourceNode) => {
-          console.log(sourceNode);
-          startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
-        }).catch((error) => {
-          console.error("Error accessing microphone", error);
-        });
+    } else if (audioContext.current.state === 'suspended') {
+      await audioContext.current.resume();
     } else {
-      audioContext.current.resume();
-      setIsRecording(true);
-      setIsMicOn(true);
-      await accessMic(audioContext.current)
-        .then((sourceNode) => {
-          console.log(sourceNode);
-          startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
-        }).catch((error) => {
-          console.error("Error accessing microphone", error);
-        });
+      audioContext.current = new AudioContext({
+        latencyHint: "interactive"
+      });
     }
+
+    setIsRecording(true);
+    setIsMicOn(true);
+    await accessMic(audioContext.current)
+      .then((sourceNode) => {
+        startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
+      }).catch((error) => {
+        console.error("Error accessing microphone", error);
+      });
   }
 
   const stopRecording = async () => {

@@ -15,7 +15,7 @@ import { MenuModal } from './MenuModal';
 import { AppOptions } from '../interfaces';
 
 //Audio Process
-import { callStopOnNewFileLoad, callStopFileAnalyzer } from '../modules/startAnalyzer';
+import { callStopOnNewFileLoad } from '../modules/startAnalyzer';
 
 interface BottomNavProps {
     isRecording: boolean,
@@ -51,7 +51,6 @@ export const BottomNav: React.FC<BottomNavProps> =
         const [aboutModalOpen, setAboutModalOpen] = useState<boolean>(false);
         const [isPlaying, setIsPlaying] = useState<boolean>(false);
         const [showPlayPause, setShowPlayPause] = useState<boolean>(false);
-        const [isFileLoaded, setIsFileLoaded] = useState<boolean>(false);
         const fileInputRef = useRef(null);
 
         const fileForReplayRef = useRef(null);
@@ -73,7 +72,7 @@ export const BottomNav: React.FC<BottomNavProps> =
         };
 
         const handleMicToggle = () => {
-            console.log('isMicOn', isMicOn);
+            if (isPlaying || isFilePlaying) callStopOnNewFileLoad();
             if (!isMicOn) {
                 setShowPlayPause(false);
                 startRecording();
