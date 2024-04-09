@@ -92,6 +92,9 @@ export const App: React.FC = () => {
   }
 
   const startFileAnalyzing = async (file: File) => {
+    if (isRecording) {
+      stopRecording();
+    }
     if (!audioContext.current || audioContext.current.state === 'closed') {
       audioContext.current = new AudioContext({
         latencyHint: "interactive"
