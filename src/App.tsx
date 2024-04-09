@@ -1,6 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import meyda from 'meyda';
-import { yin } from './yinIFFEE.js';
+import React, { useState, useRef, useEffect } from 'react'
 
 //Material UI
 // import { useMediaQuery } from "@mui/material";
@@ -8,11 +6,15 @@ import { yin } from './yinIFFEE.js';
 import './App.css'
 
 //Types
-import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
+import { AudioData } from './interfaces';
 
 //Components
 import { SpectralPlot } from './components/SpectralPlot';
 import { BottomNav } from './components/BottomNav';
+
+//Modules
+import { accessMic, stopMicStream, accessFileStream } from './modules/audioSources.js';
+import { startAnalyzer, callStopAnalyzer } from './modules/startAnalyzer.js';
 
 //Interfaces
 import { AppOptions } from './interfaces';
@@ -20,21 +22,11 @@ import { AppOptions } from './interfaces';
 
 export const App: React.FC = () => {
   const audioContext = useRef<AudioContext | null>(null);
-  const [mediaStream, setMediaStream] = useState<MediaStreamAudioSourceNode | null>(null);
-  const [meydaAnalyzer, setMeydaAnalyzer] = useState<MeydaAnalyzer | null>(null);
-
-  const [audioFile, setAudioFile] = useState<File>(null);
-
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  // const [isPaused, setIsPaused] = useState<boolean>(true);
-  // const [isEnded, setIsEnded] = useState<boolean>(false);
-
-  const [rmsArray, setRmsArray] = useState<number[]>([]);
-  const [spectralArray, setSpectralArray] = useState<number[]>([]);
-  const [perceptualSpreadArray, setPerceptualSpreadArray] = useState<number[]>([]);
-  const [formantFrequencyArray, setFormantFrequencyArray] = useState<number[]>([]);
-  const [yinFrequencyArray, setYinFrequencyArray] = useState<number[]>([]);
+  const [isMicOn, setIsMicOn] = useState<boolean>(false);
+  const [isFilePlaying, setIsFilePlaying] = useState<boolean>(false);
+  const [isEnded, setIsEnded] = useState<boolean>(false);
 
   // const isSmallScreen = useMediaQuery("(max-width: 600px)");
 
@@ -51,189 +43,107 @@ export const App: React.FC = () => {
     colorYin: '#7ee86d',
     showFirstFormant: true,
     colorFirstFormant: '#520477',
-    dataLength: 500,
+    dataLength: 250,
   });
 
-  const averageTicksRef = useRef(appOptions.averageTicks);
-  const dataLengthRef = useRef(appOptions.dataLength);
+  const appOptionsRef = useRef<AppOptions>(appOptions);
+  const micOnRef = useRef<boolean>(false);
 
-  let rmsSmall: number[] = [];
-  let spectralSmall: number[] = [];
-  let perceptualSpreadSmall: number[] = [];
-  let yinFrequencySmall: number[] = [];
-  let formantFrequencySmall: number[] = [];
+  const [audioData, setAudioData] = useState<AudioData>({
+    yinFrequency: [],
+    averageYin: 0,
+    formantFrequency: [],
+    averageFormant: 0
+  });
 
-  // const amplitudeSpectrumRef = useRef(amplitudeSpectrum);
-
-  const startRecording = () => {
-    if (!audioContext.current) {
-      audioContext.current = new AudioContext();
-      setIsRecording(true);
-      startAnalyzer();
-    }
-    if (audioContext.current) {
-      setIsRecording(true);
-      startAnalyzer();
-    }
-  }
-
-  //Sets the Meyda output of 0 to half the FFT Size against the hertz scale
-  const normalizeSpectralCentroid =
-    (spectralCentroid: number, sampleRate: number, fftSize: number) => {
-      const frequency = spectralCentroid * (sampleRate / fftSize);
-      return frequency;
-    };
-
-  const calculateFirstFormantFrequency = (dataArray: Float32Array) => {
-    let peakIndex = 0;
-    let peakValue = -Infinity;
-    for (let i = 0; i < dataArray.length; i++) {
-      if (dataArray[i] > peakValue) {
-        peakValue = dataArray[i];
-        peakIndex = i;
-      }
-
-      // console.log("First formant frequency:", firstFormantFrequency.toFixed(2), "Hz");
-    }
-    const firstFormantFrequency = (peakIndex * audioContext.current.sampleRate) / dataArray.length;
-    return firstFormantFrequency;
-  }
-
-  const movingWindowFilter = useCallback((data: number[]) => {
-    const dataSum = [0];
-    for (let i = 0; i < data.length; i++) {
-      dataSum[i + 1] = dataSum[i] + data[i];
-    }
-
-    return dataSum.slice(30).map((value, index) =>
-      (value - dataSum[index]) / averageTicksRef.current);
-  }, [appOptions]);
-
-
-  const startAnalyzer = async () => {
-
-    audioContext.current?.resume();
-
-    if (!isRecording) {
-      try {
-        let stream: MediaStream | null = null;
-        let source: MediaStreamAudioSourceNode | null = null;
-
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        source = audioContext.current?.createMediaStreamSource(stream);
-
-        //Set low pass filter to reduce noise
-        const lowpass = audioContext.current.createBiquadFilter();
-        lowpass.type = 'lowpass';
-        lowpass.frequency.value = 300; // Set the cutoff frequency
-        lowpass.Q.value = 1;
-
-        const highpass = audioContext.current.createBiquadFilter();
-        highpass.type = 'highpass';
-        highpass.frequency.value = 60;
-
-        //Connect filters to audiocontext
-        source.connect(lowpass);
-        lowpass.connect(highpass);
-        setMediaStream(source);
-
-        const fftAnalyzer = audioContext.current.createAnalyser();
-        fftAnalyzer.fftSize = 2048;
-        const bufferLength = fftAnalyzer.frequencyBinCount;
-        const dataArray = new Float32Array(bufferLength);
-        highpass.connect(fftAnalyzer);
-
-        // const formantAnalyzer = audioContext.current.createAnalyser();
-        // formantAnalyzer.fftSize = 2048;
-        // const formantBufferLength = formantAnalyzer.frequencyBinCount;
-        // const formantArray = new Float32Array(formantBufferLength);
-        // highpass.connect(formantAnalyzer);
-
-        const analyzer = meyda.createMeydaAnalyzer({
-          audioContext: audioContext.current,
-          source: fftAnalyzer,
-          bufferSize: 2048,
-          featureExtractors: ['rms', 'spectralCentroid', 'perceptualSpread', 'amplitudeSpectrum'],
-          callback: (features: Meyda.MeydaFeaturesObject) => {
-
-            //First 5 values on spectralCentroid and perceptualSpread are NaN
-            //If statement ensures the data shows on the graph immediately instead of
-            //after 30 updates as determined by the windowing function
-            if (features.spectralCentroid) {
-              spectralSmall.push(
-                normalizeSpectralCentroid(
-                  features.spectralCentroid,
-                  audioContext.current.sampleRate,
-                  fftAnalyzer.fftSize));
-            }
-            //Todo - Map RMS value to the displayed scale
-            rmsSmall.push(features.rms * 500);
-            const yinValue = yin(dataArray, audioContext.current.sampleRate, 0.05);
-
-            if (yinValue) {
-              yinFrequencySmall.push(yinValue);
-            }
-            formantFrequencySmall.push(calculateFirstFormantFrequency(features.amplitudeSpectrum));
-
-            //Todo - Map perceptual Spread to the hertz scale
-            if (features.perceptualSpread) perceptualSpreadSmall.push(features.perceptualSpread * 50);
-
-            if (spectralSmall.length >= dataLengthRef.current) {
-              spectralSmall = spectralSmall.slice(-dataLengthRef.current);
-            }
-            if (rmsSmall.length >= dataLengthRef.current) {
-              rmsSmall = rmsSmall.slice(-dataLengthRef.current);
-            }
-            if (perceptualSpreadSmall.length >= dataLengthRef.current) {
-              perceptualSpreadSmall = perceptualSpreadSmall.slice(-dataLengthRef.current);
-            }
-            if (formantFrequencySmall.length >= dataLengthRef.current) {
-              formantFrequencySmall = formantFrequencySmall.slice(-dataLengthRef.current);
-            }
-
-            if (yinFrequencySmall.length >= dataLengthRef.current) {
-              yinFrequencySmall = yinFrequencySmall.slice(-dataLengthRef.current);
-            }
-
-            setSpectralArray(movingWindowFilter(spectralSmall));
-            setRmsArray(movingWindowFilter(rmsSmall));
-            setPerceptualSpreadArray(movingWindowFilter(perceptualSpreadSmall));
-            // setPowerSpectrumArray(features.powerSpectrum);
-            fftAnalyzer.getFloatTimeDomainData(dataArray);
-            // formantAnalyzer.getFloatFrequencyData(formantArray);
-
-            setFormantFrequencyArray(movingWindowFilter(formantFrequencySmall));
-            setYinFrequencyArray(movingWindowFilter(yinFrequencySmall))
-          }
-
-        });
-
-        analyzer.start();
-        setMeydaAnalyzer(analyzer);
-
-        setIsRecording(true);
-      } catch (error) {
-        console.error('Error accessing microphone:', error);
-      }
+  const startRecording = async () => {
+    console.log(audioContext.current);
+    if (!audioContext.current || audioContext.current.state === 'closed') {
+      console.log('Creating new context for mic');
+      audioContext.current = new AudioContext({
+        latencyHint: "interactive"
+      });
+    } else if (audioContext.current.state === 'suspended') {
+      await audioContext.current.resume();
     } else {
-      console.log('Stop recording called');
-      if (mediaStream) {
-        // mediaStream.disconnect();
-        audioContext.current?.suspend();
-      }
-      if (meydaAnalyzer) {
-        meydaAnalyzer.stop();
-        console.log('Meyda stop called');
-      }
-      setIsRecording(false);
+      audioContext.current = new AudioContext({
+        latencyHint: "interactive"
+      });
     }
-  };
 
+    setIsRecording(true);
+    setIsMicOn(true);
+    await accessMic(audioContext.current)
+      .then((sourceNode) => {
+        startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
+      }).catch((error) => {
+        console.error("Error accessing microphone", error);
+      });
+  }
+
+  const stopRecording = async () => {
+    if (!audioContext.current) return;
+    if (audioContext.current.state !== 'running') return;
+
+    setIsMicOn(false);
+    await audioContext.current.suspend();
+    callStopAnalyzer();
+    stopMicStream();
+  }
+
+  const startFileAnalyzing = async (file: File) => {
+    if (isRecording) {
+      stopRecording();
+    }
+    if (!audioContext.current || audioContext.current.state === 'closed') {
+      audioContext.current = new AudioContext({
+        latencyHint: "interactive"
+      });
+    } else {
+      audioContext.current.resume();
+    }
+
+    await accessFileStream(audioContext.current, file)
+      .then((sourceNode) => {
+
+        sourceNode.addEventListener('ended', async () => {
+          const handleFileEnd = () => {
+            sourceNode.removeEventListener('ended', handleFileEnd);
+          }
+          console.log('App end event triggered');
+          setIsFilePlaying(false);
+          setIsEnded(true);
+        })
+
+        startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
+        setIsFilePlaying(true);
+      }).catch((error) => {
+        console.error("Error accessing audio file", error);
+      })
+  }
+
+  const handleMicPause = () => {
+    stopRecording();
+  }
+
+  const handleFilePause = () => {
+    audioContext.current.suspend();
+    setIsFilePlaying(false);
+  }
+
+  const handleResume = () => {
+    audioContext.current.resume();
+    // meydaAnalyzer?.start(); //Stopping analyzer on suspend results in multiple analyzers running
+    setIsFilePlaying(true);
+  }
+
+  //Cannot use the entire object - each value must be specified or it will not update
+  //because react is ornery
   useEffect(() => {
-    averageTicksRef.current = appOptions.averageTicks;
-    dataLengthRef.current = appOptions.dataLength;
-
-  }, [appOptions.averageTicks, appOptions.dataLength]);
+    appOptionsRef.current.averageTicks = appOptions.averageTicks;
+    appOptionsRef.current.dataLength = appOptions.dataLength;
+    micOnRef.current = isMicOn;
+  }, [appOptions, isMicOn]);
 
   return (
     <div className='container'>
@@ -244,25 +154,25 @@ export const App: React.FC = () => {
       <div className='plotContainer'>
         <SpectralPlot
           appOptions={appOptions}
-          spectralArray={spectralArray}
-          rmsArray={rmsArray}
-          perceptualSpreadArray={perceptualSpreadArray}
-          yinFrequencyArray={yinFrequencyArray}
-          formantFrequencyArray={formantFrequencyArray}
+          audioData={audioData}
         />
       </div>
       <div className='bottomNav'>
         <BottomNav
           isRecording={isRecording}
           startRecording={startRecording}
+          startFileAnalyzing={startFileAnalyzing}
           appOptions={appOptions}
           setAppOptions={setAppOptions}
-          audioFile={audioFile}
-          setAudioFile={setAudioFile}
+          isMicOn={isMicOn}
+          handleMicPause={handleMicPause}
+          handleFilePause={handleFilePause}
+          handleResume={handleResume}
+          isEnded={isEnded}
+          setIsEnded={setIsEnded}
+          isFilePlaying={isFilePlaying}
         />
       </div>
-
-
-    </div >
+    </div>
   )
 }
