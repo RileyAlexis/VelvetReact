@@ -135,11 +135,6 @@ export const BottomNav: React.FC<BottomNavProps> =
             setError('');
         }
 
-        const makeError = () => {
-            setOpenSnack(true);
-            setError('Things are broken and now the computer is very sad');
-        }
-
         useEffect(() => {
             console.log('isPlaying', isPlaying);
         }, [isPlaying]);
@@ -153,8 +148,6 @@ export const BottomNav: React.FC<BottomNavProps> =
                     style={{ display: 'none' }}
                     onChange={handleFileChange}
                 />
-                <button onClick={makeError}>Break things!</button>
-
                 <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                     open={openSnack}
                     onClose={handleCloseSnack}
