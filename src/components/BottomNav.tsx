@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 import {
+    Alert,
     BottomNavigation, BottomNavigationAction,
-    Modal
+    Modal, Snackbar
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
@@ -52,6 +53,8 @@ export const BottomNav: React.FC<BottomNavProps> =
         const [isPlaying, setIsPlaying] = useState<boolean>(false);
         const [showPlayPause, setShowPlayPause] = useState<boolean>(false);
         const fileInputRef = useRef(null);
+        const [error, setError] = useState<string>('');
+        const [openSnack, setOpenSnack] = useState<boolean>(false);
 
         const fileForReplayRef = useRef(null);
 
@@ -84,13 +87,16 @@ export const BottomNav: React.FC<BottomNavProps> =
         const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             const file = e.target.files?.[0];
-            if (file) {
+            if (file && file.size < 10 * 1024 * 1024) {
                 console.log('File Uploaded');
                 fileForReplayRef.current = file;
                 setShowPlayPause(true);
                 setIsPlaying(true);
                 setIsEnded(false);
                 startFileAnalyzing(file);
+            } else {
+                setOpenSnack(true);
+                setError('File size is limited to 10mb');
             }
         }
 
@@ -123,6 +129,17 @@ export const BottomNav: React.FC<BottomNavProps> =
             }
         }, [isPlaying, isEnded, isFilePlaying]);
 
+
+        const handleCloseSnack = () => {
+            setOpenSnack(false);
+            setError('');
+        }
+
+        const makeError = () => {
+            setOpenSnack(true);
+            setError('Things are broken and now the computer is very sad');
+        }
+
         useEffect(() => {
             console.log('isPlaying', isPlaying);
         }, [isPlaying]);
@@ -136,6 +153,20 @@ export const BottomNav: React.FC<BottomNavProps> =
                     style={{ display: 'none' }}
                     onChange={handleFileChange}
                 />
+                <button onClick={makeError}>Break things!</button>
+
+                <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    open={openSnack}
+                    onClose={handleCloseSnack}
+                    autoHideDuration={3000}
+                >
+                    <Alert onClose={handleCloseSnack} variant='filled' severity='error'
+                        sx={{ width: '100%' }}
+                    >
+                        {error}
+                    </Alert>
+                </Snackbar>
+
                 <BottomNavigation showLabels
                     style={{ background: 'transparent' }}
                 >
