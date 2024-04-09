@@ -5,13 +5,10 @@ import { yin } from '../modules/yinIFFEE';
 
 import { AppOptions } from "../interfaces"
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
-import { audioContext } from 'meyda';
 
 let stopMeydaAnalyzer: (() => void) | null = null;
 let stopMeydaFileAnalyzer: (() => void) | null = null;
 let stopOnNewFileLoad: (() => void) | null = null;
-
-
 
 function isAudioBufferSourceNode(node: any): node is AudioBufferSourceNode {
     return node instanceof AudioBufferSourceNode;
