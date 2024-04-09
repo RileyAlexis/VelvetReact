@@ -106,6 +106,15 @@ export const App: React.FC = () => {
 
     await accessFileStream(audioContext.current, file)
       .then((sourceNode) => {
+
+        sourceNode.addEventListener('ended', async () => {
+          const handleFileEnd = () => {
+            sourceNode.removeEventListener('ended', handleFileEnd);
+          }
+          console.log('App end event triggered');
+          setIsFilePlaying(false);
+        })
+
         startAnalyzer(audioContext.current, sourceNode, setAudioData, appOptionsRef.current);
         setIsFilePlaying(true);
       }).catch((error) => {
