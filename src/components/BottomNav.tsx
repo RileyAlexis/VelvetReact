@@ -14,6 +14,9 @@ import { MenuModal } from './MenuModal';
 //Types
 import { AppOptions } from '../interfaces';
 
+//Audio Process
+import { callStopOnNewFileLoad, callStopFileAnalyzer } from '../modules/startAnalyzer';
+
 interface BottomNavProps {
     isRecording: boolean,
     startRecording: Function,
@@ -48,6 +51,7 @@ export const BottomNav: React.FC<BottomNavProps> =
         const [aboutModalOpen, setAboutModalOpen] = useState<boolean>(false);
         const [isPlaying, setIsPlaying] = useState<boolean>(false);
         const [showPlayPause, setShowPlayPause] = useState<boolean>(false);
+        const [isFileLoaded, setIsFileLoaded] = useState<boolean>(false);
         const fileInputRef = useRef(null);
 
         const fileForReplayRef = useRef(null);
@@ -79,18 +83,23 @@ export const BottomNav: React.FC<BottomNavProps> =
         };
 
         const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
             const file = e.target.files?.[0];
             if (file) {
                 console.log('File Uploaded');
                 fileForReplayRef.current = file;
                 setShowPlayPause(true);
-                setIsPlaying(!isPlaying);
+                setIsPlaying(true);
                 setIsEnded(false);
                 startFileAnalyzing(file);
             }
         }
 
         const handleUploadClick = () => {
+            if (isPlaying || isFilePlaying) {
+                handleFilePause();
+                callStopOnNewFileLoad();
+            }
             fileInputRef.current.click();
         };
 
@@ -99,14 +108,18 @@ export const BottomNav: React.FC<BottomNavProps> =
         }
 
         const togglePlayPause = useCallback(() => {
-            setIsPlaying(!isPlaying);
-
             if (isPlaying && isFilePlaying) {
+                console.log("Pause called");
+                setIsPlaying(false);
                 handleFilePause();
             } else if (!isPlaying && !isFilePlaying) {
+                console.log("Resume called");
+                setIsPlaying(true);
                 handleResume();
             } else if (isEnded) {
+                console.log("Start playing called");
                 setIsEnded(false);
+                setIsPlaying(true);
                 startFileAnalyzing(fileForReplayRef.current);
             }
         }, [isPlaying, isEnded, isFilePlaying]);

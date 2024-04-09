@@ -5,9 +5,11 @@ import { yin } from '../modules/yinIFFEE';
 
 import { AppOptions } from "../interfaces"
 import { MeydaAnalyzer } from 'meyda/dist/esm/meyda-wa';
+import { audioContext } from 'meyda';
 
 let stopMeydaAnalyzer: (() => void) | null = null;
 let stopMeydaFileAnalyzer: (() => void) | null = null;
+let stopOnNewFileLoad: (() => void) | null = null;
 
 
 
@@ -134,7 +136,7 @@ export const startAnalyzer = async (
         const fileMeydaAnalyzer: MeydaAnalyzer = meyda.createMeydaAnalyzer({
             audioContext: audioContext,
             source: fftAnalyzer,
-            bufferSize: 4096,
+            bufferSize: fftAnalyzer.fftSize,
             featureExtractors: ['buffer', 'amplitudeSpectrum'],
             callback: (features: Meyda.MeydaFeaturesObject) => {
                 analyzeAudioSignal(features);
@@ -145,6 +147,13 @@ export const startAnalyzer = async (
 
         stopMeydaAnalyzer = () => {
             fileMeydaAnalyzer.stop();
+        }
+
+        stopOnNewFileLoad = async () => {
+            stopMeydaAnalyzer();
+            const endedEvent = new Event('ended');
+            source.dispatchEvent(endedEvent);
+            audioContext.close();
         }
 
         source.addEventListener('ended', async () => {
@@ -164,10 +173,19 @@ export const startAnalyzer = async (
     } //end isAudioBufferSourceNode else if statement
 }
 
-export const callStopAnalyzer = () => {
+export const callStopAnalyzer = (): void => {
     stopMeydaAnalyzer();
 }
 
-export const callStopFileAnalyzer = () => {
-    stopMeydaFileAnalyzer();
+export const callStopFileAnalyzer = (): void => {
+    if (stopMeydaAnalyzer) {
+        stopMeydaFileAnalyzer();
+    }
+}
+
+export const callStopOnNewFileLoad = (): void => {
+    console.log('Call Stop on New File Load called');
+    if (stopOnNewFileLoad) {
+        stopOnNewFileLoad();
+    }
 }
