@@ -21,28 +21,22 @@ export const SpectralPlot: React.FC<SpectralChartProps> =
         }, [plotRef.current])
 
         useEffect(() => {
-            // console.log(spectralArray.length);
-            // console.log(rmsArray.length);
-            // console.log(perceptualSpreadArray.length);
-            // console.log(powerSpectrumArray);
-            // console.log(yinFrequencyArray);
-        }, [])
-
-        useEffect(() => {
             if (audioData === undefined) return;
             const plot = Plot.plot({
-                marginTop: 5,
-                marginLeft: 30,
+                marginTop: 15,
+                marginLeft: 40,
                 marginBottom: 20,
                 marginRight: 15,
                 y: {
                     grid: true,
-                    domain: [0, 800],
+                    domain: [0, 1200],
+                    label: "HZ",
+                    labelAnchor: "bottom",
                     // type: 'log',
                     // tickFormat: ((f) => (x) => f((x - 1) * 100))(d3.format("+d"))
                 },
                 x: {
-                    domain: [0, appOptions.dataLength]
+                    domain: [0, appOptions.dataLength],
                 },
                 marks: [
                     Plot.frame(),
