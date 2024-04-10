@@ -91,7 +91,7 @@ export const startAnalyzer = async (
         const analyzer: MeydaAnalyzer = meyda.createMeydaAnalyzer({
             audioContext: audioContext,
             source: highpass,
-            bufferSize: 4096,
+            bufferSize: 2048,
             featureExtractors: ['buffer', 'amplitudeSpectrum', 'mfcc'],
             callback: (features: Meyda.MeydaFeaturesObject) => {
                 analyzeAudioSignal(features);
@@ -126,7 +126,7 @@ export const startAnalyzer = async (
         lowpass.connect(highpass);
 
         const fftAnalyzer = audioContext.createAnalyser();
-        fftAnalyzer.fftSize = 4096;
+        fftAnalyzer.fftSize = 2048;
         highpass.connect(fftAnalyzer);
         source.start();
 
@@ -165,10 +165,7 @@ export const startAnalyzer = async (
             if (audioContext.state === 'running') {
                 await audioContext.suspend();
             }
-
         });
-
-
     } //end isAudioBufferSourceNode else if statement
 }
 
