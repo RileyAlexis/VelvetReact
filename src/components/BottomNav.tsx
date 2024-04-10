@@ -11,6 +11,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { AboutText } from './AboutText';
 import { MenuModal } from './MenuModal';
+import { FadeLoader } from 'react-spinners';
 
 //Types
 import { AppOptions } from '../interfaces';
@@ -55,6 +56,7 @@ export const BottomNav: React.FC<BottomNavProps> =
         const fileInputRef = useRef(null);
         const [error, setError] = useState<string>('');
         const [openSnack, setOpenSnack] = useState<boolean>(false);
+        const [showLoader, setShowLoader] = useState<boolean>(false);
 
         const fileForReplayRef = useRef(null);
 
@@ -84,21 +86,37 @@ export const BottomNav: React.FC<BottomNavProps> =
             }
         };
 
-        const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-
-            const file = e.target.files?.[0];
-            if (file && file.size < 10 * 1024 * 1024) {
-                console.log('File Uploaded');
-                fileForReplayRef.current = file;
-                setShowPlayPause(true);
-                setIsPlaying(true);
-                setIsEnded(false);
-                startFileAnalyzing(file);
-            } else {
+        const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+            setShowLoader(true);
+            // await delayFunction();
+            try {
+                const file = e.target.files?.[0];
+                if (file && file.size < 10 * 1024 * 1024) {
+                    console.log('File Uploaded');
+                    fileForReplayRef.current = file;
+                    setShowPlayPause(true);
+                    setIsPlaying(true);
+                    setIsEnded(false);
+                    startFileAnalyzing(file);
+                } else {
+                    setOpenSnack(true);
+                    setError('File size is limited to 10mb');
+                }
+            } catch (error) {
                 setOpenSnack(true);
-                setError('File size is limited to 10mb');
+                setError('Error uploading file');
+            } finally {
+                setShowLoader(false);
             }
         }
+
+        // const delayFunction = (): Promise<void> => {
+        //     return new Promise((resolve) => {
+        //         setTimeout(() => {
+        //             resolve();
+        //         }, 1000); // Simulate a 1 second async operation
+        //     });
+        // };
 
         const handleUploadClick = () => {
             if (isPlaying || isFilePlaying) {
@@ -135,6 +153,11 @@ export const BottomNav: React.FC<BottomNavProps> =
             setError('');
         }
 
+        const handleCloseLoader = () => {
+            setShowLoader(false);
+            setError('');
+        }
+
         useEffect(() => {
             console.log('isPlaying', isPlaying);
         }, [isPlaying]);
@@ -159,7 +182,11 @@ export const BottomNav: React.FC<BottomNavProps> =
                         {error}
                     </Alert>
                 </Snackbar>
-
+                {showLoader &&
+                    <div className='fadeLoader'>
+                        <FadeLoader color="#cb3487" />
+                    </div>
+                }
                 <BottomNavigation showLabels
                     style={{ background: 'transparent' }}
                 >
