@@ -177,6 +177,7 @@
 
     .aboutContainer a:link {
         color: var(--linkColor);
+        margin: 4px;
     }
 
     .aboutContainer a:visited {
