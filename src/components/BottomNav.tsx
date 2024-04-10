@@ -220,10 +220,13 @@ export const BottomNav: React.FC<BottomNavProps> =
                         onClick={handleAboutModalOpen}
                     />
                 </BottomNavigation>
-
-                <Modal open={menuOpen} onClose={handleMenuClose}>
-                    <MenuModal appOptions={appOptions} setAppOptions={setAppOptions} />
-                </Modal>
+                {menuOpen &&
+                    <div className="optionsContainer">
+                        <Modal open={menuOpen} onClose={handleMenuClose}>
+                            <MenuModal appOptions={appOptions} setAppOptions={setAppOptions} />
+                        </Modal>
+                    </div>
+                }
 
                 <Modal open={aboutModalOpen} onClose={handleAboutModalClose}>
                     <div className='aboutModalMobile' style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400 }}>
