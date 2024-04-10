@@ -5,6 +5,8 @@
         --whiteText: rgba(150, 150, 150, 1);
         --blackText: black;
         --darkBackground: rgba(0, 0, 0, 0.85);
+        --linkColor: white;
+        --visitedLink: #ff8ddb;
 
         --sans: "Open Sans", sans-serif;
 
@@ -171,6 +173,14 @@
         color: var(--whiteText);
         margin-left: 1rem;
         margin-right: 1rem;
+    }
+
+    .aboutContainer a:link {
+        color: var(--linkColor);
+    }
+
+    .aboutContainer a:visited {
+        color: var(--visitedLink);
     }
 
     .aboutContainer h1,
