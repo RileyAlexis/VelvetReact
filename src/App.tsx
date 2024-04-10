@@ -128,7 +128,6 @@ export const App: React.FC = () => {
 
   const handleFilePause = () => {
     audioContext.current.suspend();
-    setIsFilePlaying(false);
   }
 
   const handleResume = () => {
