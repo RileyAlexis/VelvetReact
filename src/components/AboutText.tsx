@@ -9,7 +9,7 @@ export const AboutText: React.FC = () => {
                 Velvet grew out of a need for a more accurate, free and open source voice analysis
                 application that could also be trustworthy. This application is intended to assist
                 trans feminine people in voice training by providing data driven feedback in real time.
-                This application is free as in speech and as in beer and always will be. It collects no data and does not communicate with any other services.
+                This application is free and always will be. It collects no data and does not communicate with any other services.
             </p>
 
 
@@ -22,6 +22,9 @@ export const AboutText: React.FC = () => {
                 from an audio
                 stream. This information should give an accurate estimate of the range
                 of frequencies in a human voice.
+            </p>
+            <p>
+                <a target="_blank" href="https://github.com/RileyAlexis/VelvetReact">Source Code on Github</a>
             </p>
         </div>
     )
