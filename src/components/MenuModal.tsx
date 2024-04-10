@@ -17,26 +17,26 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
         }))
     }
 
-    const toggleSpectral = () => {
-        setAppOptions(prevOptions => ({
-            ...prevOptions,
-            showSpectral: !appOptions.showSpectral
-        }))
-    }
+    // const toggleSpectral = () => {
+    //     setAppOptions(prevOptions => ({
+    //         ...prevOptions,
+    //         showSpectral: !appOptions.showSpectral
+    //     }))
+    // }
 
-    const toggleRms = () => {
-        setAppOptions(prevOptions => ({
-            ...prevOptions,
-            showRms: !appOptions.showRms
-        }))
-    }
+    // const toggleRms = () => {
+    //     setAppOptions(prevOptions => ({
+    //         ...prevOptions,
+    //         showRms: !appOptions.showRms
+    //     }))
+    // }
 
-    const togglePerceptual = () => {
-        setAppOptions(prevOptions => ({
-            ...prevOptions,
-            showPerceptual: !appOptions.showPerceptual
-        }))
-    }
+    // const togglePerceptual = () => {
+    //     setAppOptions(prevOptions => ({
+    //         ...prevOptions,
+    //         showPerceptual: !appOptions.showPerceptual
+    //     }))
+    // }
 
     const toggleYin = () => {
         setAppOptions(prevOptions => ({
@@ -61,7 +61,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
             <div>
                 <Switch checked={appOptions.showFirstFormant} onChange={toggleFirstFormant} /><span>Show First Formant</span>
             </div>
-            <div>
+            {/* <div>
                 <Switch checked={appOptions.showSpectral} onChange={toggleSpectral} /><span>Show Spectral Centroid</span>
             </div>
             <div>
@@ -69,7 +69,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
             </div>
             <div>
                 <Switch checked={appOptions.showPerceptual} onChange={togglePerceptual} />Show Perceptual Spread
-            </div>
+            </div> */}
             <div>
                 <Switch checked={appOptions.showYin} onChange={toggleYin} />Show Base Frequency
             </div>
@@ -78,7 +78,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
                     value={appOptions.dataLength}
                     onChange={setDataLength}
                     min={100}
-                    max={5000}
+                    max={2000}
                     step={100}
                     valueLabelDisplay="auto"
                     marks

@@ -215,7 +215,12 @@
 
 }
 
-@media only screen and (max-width: 768px) and (orientation: portrait) {}
+@media only screen and (max-width: 768px) and (orientation: portrait) {
+
+    .optionsContainer {
+        width: 60vw;
+    }
+}
 
 /* @media only screen and (max-width: 1024px) and (orientation: landscape) {
     .container {}
