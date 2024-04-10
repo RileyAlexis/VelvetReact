@@ -153,11 +153,6 @@ export const BottomNav: React.FC<BottomNavProps> =
             setError('');
         }
 
-        const handleCloseLoader = () => {
-            setShowLoader(false);
-            setError('');
-        }
-
         useEffect(() => {
             console.log('isPlaying', isPlaying);
         }, [isPlaying]);
