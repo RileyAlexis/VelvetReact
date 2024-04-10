@@ -88,7 +88,7 @@ export const BottomNav: React.FC<BottomNavProps> =
 
         const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
             setShowLoader(true);
-            // await delayFunction();
+            await delayFunction();
             try {
                 const file = e.target.files?.[0];
                 if (file && file.size < 10 * 1024 * 1024) {
@@ -110,13 +110,13 @@ export const BottomNav: React.FC<BottomNavProps> =
             }
         }
 
-        // const delayFunction = (): Promise<void> => {
-        //     return new Promise((resolve) => {
-        //         setTimeout(() => {
-        //             resolve();
-        //         }, 1000); // Simulate a 1 second async operation
-        //     });
-        // };
+        const delayFunction = (): Promise<void> => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 200); // Simulate a 1 second async operation
+            });
+        };
 
         const handleUploadClick = () => {
             if (isPlaying || isFilePlaying) {
