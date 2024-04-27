@@ -28,17 +28,12 @@
     "screenshots": [
         {
         "src": "./src/assets/screenshot01.png",
-        "sizes": "322x692",
+        "sizes": "733x1574",
         "type": "image/png"
         },
                 {
         "src": "./src/assets/screenshot02.png",
-        "sizes": "318x696",
-        "type": "image/png"
-        },
-                {
-        "src": "./src/assets/screenshot03.png",
-        "sizes": "320x698",
+        "sizes": "760x1579",
         "type": "image/png"
         }
     ]
