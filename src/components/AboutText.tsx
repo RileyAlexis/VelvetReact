@@ -11,6 +11,9 @@ export const AboutText: React.FC = () => {
                 trans feminine people in voice training by providing data driven feedback in real time.
                 This application is free and always will be. It collects no data and does not communicate with any other services.
             </p>
+            <p>
+                Velvet can be installed as an app on iOS, Android, MacOS(Chrome) and Windows(Chrome, Edge).
+            </p>
 
 
             <h3>Frequencies</h3>
