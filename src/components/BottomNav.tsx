@@ -60,8 +60,10 @@ export const BottomNav: React.FC<BottomNavProps> =
         const [showLoader, setShowLoader] = useState<boolean>(false);
         const [deferredPrompt, setDeferredPrompt] = useState<any | null>(null);
         const fileForReplayRef = useRef(null);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
         useEffect(() => {
+
             const handleBeforeInstallPrompt = (event: Event) => {
                 event.preventDefault();
                 setDeferredPrompt(event);
@@ -187,6 +189,10 @@ export const BottomNav: React.FC<BottomNavProps> =
             console.log('isPlaying', isPlaying);
         }, [isPlaying]);
 
+        const installIOS = () => {
+            alert(`To install this app on iOS tap the share icon and select "Add to Home Screen"`);
+        }
+
         return (
             <div>
                 <input
@@ -248,6 +254,15 @@ export const BottomNav: React.FC<BottomNavProps> =
                             label='Install App'
                             icon={<InstallMobileIcon />}
                             onClick={installApp}
+                        />
+                    }
+
+                    {isIOS &&
+                        <BottomNavigationAction
+                            style={buttonStyle}
+                            label='Install App'
+                            icon={<InstallMobileIcon />}
+                            onClick={installIOS}
                         />
                     }
 
