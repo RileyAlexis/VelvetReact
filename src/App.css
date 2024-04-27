@@ -92,8 +92,6 @@
 
     .plotBox {
         height: 100%;
-        border: 2px solid yellow;
-
     }
 
     .legendContainer {
@@ -219,6 +217,13 @@
 
     .optionsContainer {
         width: 60vw;
+    }
+}
+
+@media (display-mode: standalone),
+(display-mode: minimal-ui) {
+    .container {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left) !important;
     }
 }
 

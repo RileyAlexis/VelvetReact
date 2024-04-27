@@ -83,7 +83,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
             </div>
             {isIOS &&
                 <div>
-                    <Switch checked={appOptions.iOSInstall} onChange={toggleIOS} />Hide Install Button
+                    <Switch checked={appOptions.iOSInstall} onChange={toggleIOS} />Show Install Button
                 </div>
             }
             <div className="zoomSlider">

@@ -273,6 +273,7 @@ export const BottomNav: React.FC<BottomNavProps> =
                         onClick={handleAboutModalOpen}
                     />
                 </BottomNavigation>
+
                 {menuOpen &&
                     <div className="optionsContainer">
                         <Modal open={menuOpen} onClose={handleMenuClose}>
