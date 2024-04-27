@@ -44,6 +44,7 @@ export const App: React.FC = () => {
     showFirstFormant: true,
     colorFirstFormant: '#520477',
     dataLength: 250,
+    iOSInstall: true
   });
 
   const appOptionsRef = useRef<AppOptions>(appOptions);
@@ -143,6 +144,14 @@ export const App: React.FC = () => {
     appOptionsRef.current.dataLength = appOptions.dataLength;
     micOnRef.current = isMicOn;
   }, [appOptions, isMicOn]);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+      })
+    }
+  })
 
   return (
     <div className='container'>

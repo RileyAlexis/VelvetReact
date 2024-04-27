@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import InstallMobileIcon from '@mui/icons-material/InstallMobile';
 import PauseIcon from '@mui/icons-material/Pause';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { AboutText } from './AboutText';
@@ -57,8 +58,39 @@ export const BottomNav: React.FC<BottomNavProps> =
         const [error, setError] = useState<string>('');
         const [openSnack, setOpenSnack] = useState<boolean>(false);
         const [showLoader, setShowLoader] = useState<boolean>(false);
-
+        const [deferredPrompt, setDeferredPrompt] = useState<any | null>(null);
         const fileForReplayRef = useRef(null);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+        useEffect(() => {
+
+            const handleBeforeInstallPrompt = (event: Event) => {
+                event.preventDefault();
+                setDeferredPrompt(event);
+            }
+            console.log(deferredPrompt);
+
+            window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+            return () => {
+                window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            }
+        }, []);
+
+        const installApp = () => {
+            console.log(deferredPrompt);
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult: any) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Accepted');
+                    } else {
+                        console.log('Rejected');
+                    }
+                    setDeferredPrompt(null);
+                })
+            }
+        };
 
         const handleMenuOpen = () => {
             setMenuOpen(true);
@@ -157,6 +189,10 @@ export const BottomNav: React.FC<BottomNavProps> =
             console.log('isPlaying', isPlaying);
         }, [isPlaying]);
 
+        const installIOS = () => {
+            alert(`To install this app on iOS tap the share icon and select "Add to Home Screen"`);
+        }
+
         return (
             <div>
                 <input
@@ -212,6 +248,23 @@ export const BottomNav: React.FC<BottomNavProps> =
                             onClick={togglePlayPause}
                         />
                     }
+                    {deferredPrompt && !isIOS &&
+                        < BottomNavigationAction
+                            style={buttonStyle}
+                            label='Install App'
+                            icon={<InstallMobileIcon />}
+                            onClick={installApp}
+                        />
+                    }
+
+                    {isIOS && appOptions.iOSInstall &&
+                        <BottomNavigationAction
+                            style={buttonStyle}
+                            label='Install App'
+                            icon={<InstallMobileIcon />}
+                            onClick={installIOS}
+                        />
+                    }
 
                     <BottomNavigationAction
                         style={buttonStyle}
@@ -220,6 +273,7 @@ export const BottomNav: React.FC<BottomNavProps> =
                         onClick={handleAboutModalOpen}
                     />
                 </BottomNavigation>
+
                 {menuOpen &&
                     <div className="optionsContainer">
                         <Modal open={menuOpen} onClose={handleMenuClose}>

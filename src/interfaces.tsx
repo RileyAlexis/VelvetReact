@@ -12,6 +12,7 @@ export interface AppOptions {
     showFirstFormant: boolean,
     colorFirstFormant: string,
     dataLength: number,
+    iOSInstall: boolean
 }
 
 export interface AudioData {
