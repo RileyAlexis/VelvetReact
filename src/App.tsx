@@ -44,6 +44,7 @@ export const App: React.FC = () => {
     showFirstFormant: true,
     colorFirstFormant: '#520477',
     dataLength: 250,
+    iOSInstall: true
   });
 
   const appOptionsRef = useRef<AppOptions>(appOptions);

@@ -248,8 +248,8 @@ export const BottomNav: React.FC<BottomNavProps> =
                             onClick={togglePlayPause}
                         />
                     }
-                    {deferredPrompt &&
-                        <BottomNavigationAction
+                    {deferredPrompt && !isIOS &&
+                        < BottomNavigationAction
                             style={buttonStyle}
                             label='Install App'
                             icon={<InstallMobileIcon />}
@@ -257,7 +257,7 @@ export const BottomNav: React.FC<BottomNavProps> =
                         />
                     }
 
-                    {isIOS &&
+                    {isIOS && appOptions.iOSInstall &&
                         <BottomNavigationAction
                             style={buttonStyle}
                             label='Install App'

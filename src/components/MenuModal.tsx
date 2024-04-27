@@ -9,6 +9,7 @@ interface MenuModalProps {
 
 export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions }) => {
 
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const setDataLength = (event: Event, value: number) => {
         event.preventDefault();
         setAppOptions(prevOptions => ({
@@ -52,6 +53,13 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
         }));
     }
 
+    const toggleIOS = () => {
+        setAppOptions(prevOptions => ({
+            ...prevOptions,
+            iOSInstall: !appOptions.iOSInstall
+        }))
+    }
+
 
     return (
         <div className="optionsModal">
@@ -73,6 +81,11 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
             <div>
                 <Switch checked={appOptions.showYin} onChange={toggleYin} />Show Base Frequency
             </div>
+            {isIOS &&
+                <div>
+                    <Switch checked={appOptions.iOSInstall} onChange={toggleIOS} />Hide Install Button
+                </div>
+            }
             <div className="zoomSlider">
                 <Slider
                     value={appOptions.dataLength}
