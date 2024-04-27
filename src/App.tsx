@@ -144,6 +144,14 @@ export const App: React.FC = () => {
     micOnRef.current = isMicOn;
   }, [appOptions, isMicOn]);
 
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+      })
+    }
+  })
+
   return (
     <div className='container'>
       <header>
