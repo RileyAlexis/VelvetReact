@@ -9,10 +9,10 @@ export default defineConfig({
       manifest: {
         name: "Velvet is a voice resonance analyzer for speech therapy purposes",
         short_name: "Velvet",
-        start_url: "./",
+        start_url: "/",
         orientation: "any",
         theme_color: "#6b003b",
-        scope: "./",
+        scope: "/",
         display: "standalone",
         icons: [
           {
@@ -42,11 +42,6 @@ export default defineConfig({
           {
             src: "./src/assets/screenshot02.png",
             sizes: "318x696",
-            type: "image/png"
-          },
-          {
-            src: "./src/assets/screenshot03.png",
-            sizes: "320x698",
             type: "image/png"
           }
         ]
