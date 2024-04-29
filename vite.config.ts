@@ -1,51 +1,121 @@
+// vite.config.js
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
-    react(),
     VitePWA({
+      injectRegister: 'auto',
       manifest: {
-        name: "Velvet is a voice resonance analyzer for speech therapy purposes",
-        short_name: "Velvet",
-        start_url: "/",
-        orientation: "any",
-        theme_color: "#6b003b",
-        scope: "/",
-        display: "standalone",
+        name: 'Velvet Voice Resonance Analyzer',
+        short_name: 'Velvet',
+        start_url: '/',
+        orientation: 'any',
+        theme_color: '#6b003b',
+        scope: '/',
+        display: 'standalone',
         icons: [
           {
-            src: "./src/assets/velvet512.png",
-            sizes: "512x512",
-            type: "image/png"
+            src: '/src/assets/velvet512.png',
+            sizes: '512x512',
+            type: 'image/png',
           },
           {
-            src: "./src/assets/velvet1024.png",
-            sizes: "1024x1024",
-            type: "image/png"
+            src: '/src/assets/velvet1024.png',
+            sizes: '1024x1024',
+            type: 'image/png',
           },
           {
-            src: "./src/assets/velvet512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable"
-          }
+            src: '/src/assets/velvet512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
+            src: '/src/assets/iOS/1024.png',
+            sizes: '1024x1024',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/iOS/512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/iOS/180.png',
+            sizes: '180x180',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/iOS/152.png',
+            sizes: '152x152',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/iOS/120.png',
+            sizes: '120x120',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/iOS/87.png',
+            sizes: '87x87',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/iOS/80.png',
+            sizes: '80x80',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/iOS/76.png',
+            sizes: '76x76',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/iOS/72.png',
+            sizes: '72x72',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/android/mipmap-xxxhdpi/ic_launcher.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/android/mipmap-xxhdpi/ic_launcher.png',
+            sizes: '144x144',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/android/mipmap-xhdpi/ic_launcher.png',
+            sizes: '96x96',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/android/mipmap-hdpi/ic_launcher.png',
+            sizes: '72x72',
+            type: 'image/png',
+          },
+          {
+            src: '/src/assets/android/mipmap-mdpi/ic_launcher.png',
+            sizes: '48x48',
+            type: 'image/png',
+          },
         ],
-        description: "A voice resonance analyzer",
+        description: 'A voice resonance analyzer',
         screenshots: [
           {
-            src: "./src/assets/screenshot01.png",
-            sizes: "322x692",
-            type: "image/png"
+            src: '/src/assets/screenshot01.png',
+            sizes: '733x1574',
+            type: 'image/png',
           },
           {
-            src: "./src/assets/screenshot02.png",
-            sizes: "318x696",
-            type: "image/png"
-          }
-        ]
-      }
-    })
+            src: '/src/assets/screenshot02.png',
+            sizes: '760x1579',
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
   ],
 });
