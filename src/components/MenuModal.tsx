@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Switch, Slider } from "@mui/material";
 import { AppOptions } from "../interfaces";
 
@@ -10,6 +10,21 @@ interface MenuModalProps {
 export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions }) => {
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const [isStandalone, setIsStandalone] = useState<boolean>(false);
+
+
+    //Detects standalone mode on iOS
+    useEffect(() => {
+        const checkStandalone = () => {
+            setIsStandalone(Boolean((window.navigator as any)?.standalone))
+        }
+        checkStandalone();
+        window.addEventListener('appinstalled', checkStandalone);
+        return () => {
+            window.removeEventListener('appinstalled', checkStandalone);
+        }
+    }, []);
+
     const setDataLength = (event: Event, value: number) => {
         event.preventDefault();
         setAppOptions(prevOptions => ({
@@ -81,7 +96,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({ appOptions, setAppOptions 
             <div>
                 <Switch checked={appOptions.showYin} onChange={toggleYin} />Show Base Frequency
             </div>
-            {isIOS &&
+            {isIOS && !isStandalone &&
                 <div>
                     <Switch checked={appOptions.iOSInstall} onChange={toggleIOS} />Show Install Button
                 </div>
