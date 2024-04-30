@@ -284,7 +284,7 @@ export const BottomNav: React.FC<BottomNavProps> =
                         />
                     }
 
-                    {isIOS && appOptions.iOSInstall && isStandalone &&
+                    {isIOS && appOptions.iOSInstall && !isStandalone &&
                         <BottomNavigationAction
                             style={buttonStyle}
                             label='Install App'
