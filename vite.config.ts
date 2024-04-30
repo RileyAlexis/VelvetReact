@@ -3,13 +3,19 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // server: process.env.NODE_ENV === 'production' ? undefined : {
+  //   https: {
+  //     key: './key.pem',
+  //     cert: './cert.pem',
+  //   }
+  // },
   plugins: [
     VitePWA({
       injectRegister: 'auto',
       manifest: {
         name: 'Velvet Voice Resonance Analyzer',
         short_name: 'Velvet',
-        start_url: '/',
+        start_url: '/index.html',
         orientation: 'any',
         theme_color: '#6b003b',
         scope: '/',
