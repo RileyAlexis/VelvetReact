@@ -61,9 +61,33 @@ export const BottomNav: React.FC<BottomNavProps> =
         const [deferredPrompt, setDeferredPrompt] = useState<any | null>(null);
         const fileForReplayRef = useRef(null);
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const [isStandalone, setIsStandalone] = useState<boolean>(false);
+
+
+        //Detects standalone mode on iOS
+        useEffect(() => {
+            const checkStandalone = () => {
+                setIsStandalone(Boolean((window.navigator as any)?.standalone))
+            }
+            checkStandalone();
+            window.addEventListener('appinstalled', checkStandalone);
+            return () => {
+                window.removeEventListener('appinstalled', checkStandalone);
+            }
+        }, []);
 
         useEffect(() => {
+            if (isStandalone) {
+                setAppOptions(prevOptions => ({
+                    ...prevOptions,
+                    iOSInstall: false
+                }))
+            }
+        })
 
+        //Detects chrome only event
+        useEffect(() => {
+            console.log('standalone', isStandalone);
             const handleBeforeInstallPrompt = (event: Event) => {
                 event.preventDefault();
                 setDeferredPrompt(event);
@@ -257,7 +281,7 @@ export const BottomNav: React.FC<BottomNavProps> =
                         />
                     }
 
-                    {isIOS && appOptions.iOSInstall &&
+                    {isIOS && appOptions.iOSInstall && isStandalone &&
                         <BottomNavigationAction
                             style={buttonStyle}
                             label='Install App'
