@@ -1,7 +1,5 @@
 // vite.config.js
 import { defineConfig } from 'vite';
-import * as path from 'path';
-const vitePath = require.resolve('vite');
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
