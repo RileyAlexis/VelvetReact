@@ -222,7 +222,7 @@
 
 @media (display-mode: standalone),
 (display-mode: minimal-ui) {
-    .container {
+    .body {
         padding-top: constant(safe-area-inset-top) !important;
         padding-right: constant(safe-area-inset-right) !important;
         padding-bottom: constant(safe-area-inset-bottom) !important;
