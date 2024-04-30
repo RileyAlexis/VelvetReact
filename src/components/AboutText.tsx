@@ -12,7 +12,7 @@ export const AboutText: React.FC = () => {
                 This application is free and always will be. It collects no data and does not communicate with any other services.
             </p>
             <p>
-                Velvet can be installed as an app on iOS, Android, MacOS(Chrome) and Windows(Chrome, Edge).
+                Velvet can be installed as an app on iOS, Android, MacOS(Safari, Chrome) and Windows(Chrome, Edge).
             </p>
 
 
