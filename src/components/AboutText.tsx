@@ -3,8 +3,6 @@ import React from "react";
 export const AboutText: React.FC = () => {
     return (
         <div className="aboutContainer">
-            <h1>Velvet</h1>
-            <h2>A Voice Resonance Analyzer</h2>
             <p>
                 Velvet grew out of a need for a more accurate, free and open source voice analysis
                 application that could also be trustworthy. This application is intended to assist

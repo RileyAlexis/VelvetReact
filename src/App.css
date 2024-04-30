@@ -62,7 +62,6 @@
         margin: 0;
     }
 
-
     .container {
         display: flex;
         height: 100vh;
@@ -121,7 +120,7 @@
     }
 
     .bottomNav {
-        position: fixed;
+        position: relative;
         bottom: 0%;
         width: 100%;
         background-color: var(--darkBackground);
@@ -180,8 +179,7 @@
         display: flex;
         flex-direction: column;
         color: var(--whiteText);
-        margin-left: 1rem;
-        margin-right: 1rem;
+        /* background-color: var(--darkBackground); */
     }
 
     .aboutContainer a:link {
@@ -210,7 +208,6 @@
         align-items: center;
         background-color: rgba(0, 0, 0, 0.5);
     }
-
 }
 
 @media only screen and (max-width: 768px) and (orientation: portrait) {
@@ -250,6 +247,8 @@
         padding-left: env(safe-area-inset-left) !important;
     }
 }
+
+
 
 /* @media only screen and (max-width: 1024px) and (orientation: landscape) {
     .container {}

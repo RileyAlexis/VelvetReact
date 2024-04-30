@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     Alert,
     BottomNavigation, BottomNavigationAction,
-    Modal, Snackbar
+    Modal, Snackbar, Dialog,
+    DialogContent, Slide
 } from '@mui/material';
 import { Mic, MicOff, Menu, Info } from '@mui/icons-material';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
@@ -34,6 +35,8 @@ interface BottomNavProps {
     setIsEnded: Function,
     isFilePlaying: boolean,
 }
+
+
 
 export const BottomNav: React.FC<BottomNavProps> =
     ({
@@ -306,11 +309,33 @@ export const BottomNav: React.FC<BottomNavProps> =
                     </div>
                 }
 
-                <Modal open={aboutModalOpen} onClose={handleAboutModalClose}>
-                    <div className='aboutModalMobile' style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400 }}>
+                <Dialog
+                    open={aboutModalOpen}
+                    onClose={handleAboutModalClose}
+                    TransitionComponent={Slide}
+                    transitionDuration={500}
+                    maxWidth="md"
+                    className="aboutContainer"
+                    PaperProps={{
+                        sx: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dark background
+                            color: '#fff', // White text color
+                            boxShadow: 'none', // Remove box shadow
+                        },
+                    }}
+                    sx={{
+                        position: 'fixed',
+                        bottom: 56,
+                        left: 0,
+                        right: 0,
+
+                    }}
+
+                >
+                    <DialogContent dividers className={"aboutContent"}>
                         <AboutText />
-                    </div>
-                </Modal>
+                    </DialogContent>
+                </Dialog>
             </div>
         );
     }
