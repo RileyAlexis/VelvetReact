@@ -36,8 +36,6 @@ interface BottomNavProps {
     isFilePlaying: boolean,
 }
 
-
-
 export const BottomNav: React.FC<BottomNavProps> =
     ({
         startRecording,
@@ -318,9 +316,9 @@ export const BottomNav: React.FC<BottomNavProps> =
                     className="aboutContainer"
                     PaperProps={{
                         sx: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dark background
-                            color: '#fff', // White text color
-                            boxShadow: 'none', // Remove box shadow
+                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                            color: '#fff',
+                            boxShadow: 'none',
                         },
                     }}
                     sx={{
@@ -330,7 +328,6 @@ export const BottomNav: React.FC<BottomNavProps> =
                         right: 0,
 
                     }}
-
                 >
                     <DialogContent dividers className={"aboutContent"}>
                         <AboutText />
