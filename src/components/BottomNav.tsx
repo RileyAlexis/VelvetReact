@@ -304,13 +304,6 @@ export const BottomNav: React.FC<BottomNavProps> =
                         icon={<Info />}
                         onClick={handleAboutModalOpen}
                     />
-
-                    {/* <BottomNavigationAction
-                        style={buttonStyle}
-                        label="About"
-                        icon={<Info />}
-                        onClick={handleAboutModalOpen}
-                    /> */}
                 </BottomNavigation>
 
                 {menuOpen &&
