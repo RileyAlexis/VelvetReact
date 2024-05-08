@@ -244,7 +244,14 @@ export const BottomNav: React.FC<BottomNavProps> =
                     </div>
                 }
                 <BottomNavigation showLabels
-                    style={{ background: 'transparent' }}
+                    sx={{
+                        background: 'transparent',
+                        justifyContent: 'center',
+                        '& .MuiBottomNavigationAction-root': {
+                            minWidth: 'auto', // Allows the buttons to be closer together
+                            marginRight: '-8px', // Adjust this value to reduce the gap between buttons
+                        },
+                    }}
                 >
                     <BottomNavigationAction
                         style={buttonStyle}
@@ -297,6 +304,13 @@ export const BottomNav: React.FC<BottomNavProps> =
                         icon={<Info />}
                         onClick={handleAboutModalOpen}
                     />
+
+                    {/* <BottomNavigationAction
+                        style={buttonStyle}
+                        label="About"
+                        icon={<Info />}
+                        onClick={handleAboutModalOpen}
+                    /> */}
                 </BottomNavigation>
 
                 {menuOpen &&

@@ -3,12 +3,12 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  server: process.env.NODE_ENV === 'production' ? undefined : {
-    https: {
-      key: './key.pem',
-      cert: './cert.pem',
-    }
-  },
+  // server: process.env.NODE_ENV === 'production' ? undefined : {
+  //   https: {
+  //     key: './key.pem',
+  //     cert: './cert.pem',
+  //   }
+  // },
   plugins: [
     VitePWA({
       injectRegister: 'auto',
