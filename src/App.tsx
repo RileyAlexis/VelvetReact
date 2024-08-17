@@ -152,10 +152,13 @@ export const App: React.FC = () => {
 
   return (
     <div className='container'>
-      <header>
-        <h1>Velvet</h1>
-        <h2>A Voice Resonance Analyzer</h2>
-      </header>
+
+      <center>
+        <header>
+          <h4>Velvet</h4>
+          <h5>A Voice Resonance Analyzer</h5>
+        </header>
+      </center>
       <div className='plotContainer'>
         <SpectralPlot
           appOptions={appOptions}
