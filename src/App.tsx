@@ -7,6 +7,7 @@ import './App.css'
 
 //Types
 import { AudioData } from './interfaces';
+import { AppOptions } from './interfaces';
 
 //Components
 import { SpectralPlot } from './components/SpectralPlot';
@@ -15,10 +16,6 @@ import { BottomNav } from './components/BottomNav';
 //Modules
 import { accessMic, stopMicStream, accessFileStream } from './modules/audioSources.js';
 import { startAnalyzer, callStopAnalyzer } from './modules/startAnalyzer.js';
-
-//Interfaces
-import { AppOptions } from './interfaces';
-
 
 export const App: React.FC = () => {
   const audioContext = useRef<AudioContext | null>(null);
