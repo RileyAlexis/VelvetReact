@@ -9,6 +9,13 @@ export default defineConfig({
   //     cert: './cert.pem',
   //   }
   // },
+  build: {
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      }
+    }
+  },
   plugins: [
     VitePWA({
       injectRegister: 'auto',
