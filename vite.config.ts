@@ -19,6 +19,10 @@ export default defineConfig({
   plugins: [
     VitePWA({
       injectRegister: 'auto',
+      registerType: 'autoUpdate',
+      devOptions: {
+        enabled: false
+      },
       manifest: {
         name: 'Velvet Voice Resonance Analyzer',
         short_name: 'Velvet',

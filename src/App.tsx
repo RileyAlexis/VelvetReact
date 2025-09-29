@@ -148,7 +148,7 @@ export const App: React.FC = () => {
         console.error('Service worker registration failed:', error);
       });
     }
-  })
+  },[])
 
   return (
     <div className='container'>
